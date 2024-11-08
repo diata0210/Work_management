@@ -1,4 +1,3 @@
-
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT NOT NULL UNIQUE,
@@ -49,3 +48,23 @@ CREATE TABLE messages (
     FOREIGN KEY (project_id) REFERENCES projects(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- Insert sample data
+INSERT INTO users (username, password, email) VALUES ('user1', 'password1', 'user1@example.com');
+INSERT INTO users (username, password, email) VALUES ('user2', 'password2', 'user2@example.com');
+
+INSERT INTO projects (name, description, owner_id) VALUES ('Project 1', 'Description for Project 1', 1);
+INSERT INTO projects (name, description, owner_id) VALUES ('Project 2', 'Description for Project 2', 2);
+
+INSERT INTO tasks (project_id, assigned_to, name, status) VALUES (1, 1, 'Task 1', 'not started');
+INSERT INTO tasks (project_id, assigned_to, name, status) VALUES (1, 2, 'Task 2', 'in progress');
+INSERT INTO tasks (project_id, assigned_to, name, status) VALUES (2, 1, 'Task 3', 'completed');
+
+INSERT INTO comments (task_id, user_id, content) VALUES (1, 1, 'Comment for Task 1');
+INSERT INTO comments (task_id, user_id, content) VALUES (2, 2, 'Comment for Task 2');
+
+INSERT INTO attachments (task_id, file_path) VALUES (1, '/path/to/file1.txt');
+INSERT INTO attachments (task_id, file_path) VALUES (2, '/path/to/file2.txt');
+
+INSERT INTO messages (project_id, user_id, content) VALUES (1, 1, 'Message for Project 1');
+INSERT INTO messages (project_id, user_id, content) VALUES (2, 2, 'Message for Project 2');

@@ -40,25 +40,49 @@ void handle_register(int client_socket, char *buffer) {
 }
 
 void handle_login(int client_socket, char *buffer) {
-    char username[50], password[50];
-    sscanf(buffer, "LOGIN %s %s", username, password);
-
+    char username[50] = {0};
+    char password[50] = {0};
+    
+    if(sscanf(buffer, "LOGIN %49s %49s", username, password) != 2) {
+        printf("Invalid login format\n");
+        send(client_socket, "Login failed", strlen("Login failed"), 0);
+        return;
+    }
+    
+    printf("\nLogin attempt:\n");
+    printf("Username: '%s'\n", username);
+    printf("Password: '%s'\n", password);
+    
     char sql[256];
-    sprintf(sql, "SELECT * FROM users WHERE username='%s' AND password='%s';", username, password);
+    sprintf(sql, "SELECT id, username, password FROM users WHERE username='%s' AND password='%s';", 
+        username, password);
+    printf("Executing SQL: %s\n", sql);
 
-    sqlite3_stmt *res;
-    int rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
-    if (rc == SQLITE_OK) {
-        if (sqlite3_step(res) == SQLITE_ROW) {
-            send(client_socket, "Login successful", strlen("Login successful"), 0);
-        } else {
-            send(client_socket, "Login failed", strlen("Login failed"), 0);
-        }
+    sqlite3_stmt *stmt;
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+    
+    if (rc != SQLITE_OK) {
+        printf("SQL prepare failed: %s\n", sqlite3_errmsg(db));
+        send(client_socket, "Login failed", strlen("Login failed"), 0);
+        return;
+    }
+
+    rc = sqlite3_step(stmt);
+    printf("SQL step result: %d\n", rc);
+    
+    if (rc == SQLITE_ROW) {
+        printf("Found user:\n");
+        printf("ID: %d\n", sqlite3_column_int(stmt, 0));
+        printf("Username: %s\n", sqlite3_column_text(stmt, 1));
+        printf("Password: %s\n", sqlite3_column_text(stmt, 2));
+        
+        send(client_socket, "Login successful", strlen("Login successful"), 0);
     } else {
-        fprintf(stderr, "Failed to execute statement: %s\n", sqlite3_errmsg(db));
+        printf("No matching user found\n");
         send(client_socket, "Login failed", strlen("Login failed"), 0);
     }
-    sqlite3_finalize(res);
+
+    sqlite3_finalize(stmt);
 }
 
 void handle_create_project(int client_socket, char *buffer) {
@@ -222,46 +246,104 @@ void handle_video_call(int client_socket, char *buffer) {
     send(client_socket, "Video call ended", strlen("Video call ended"), 0);
 }
 
+// Thêm struct để lưu trữ thông tin kết nối client
+typedef struct {
+    int socket;
+    sqlite3 *db;
+} ClientInfo;
+
+// Sửa lại hàm xử lý client
 void *handle_client(void *arg) {
-    int client_socket = *(int *)arg;
+    ClientInfo *client_info = (ClientInfo *)arg;
     char buffer[1024] = {0};
     int valread;
 
-    // Req from client
-    valread = read(client_socket, buffer, 1024);
-    log_message(buffer);
+    while ((valread = read(client_info->socket, buffer, 1024)) > 0) {
+        buffer[valread] = '\0';
+        log_message(buffer);
 
-    if (strncmp(buffer, "REGISTER", 8) == 0) {
-        handle_register(client_socket, buffer);
-    } else if (strncmp(buffer, "LOGIN", 5) == 0) {
-        handle_login(client_socket, buffer);
-    } else if (strncmp(buffer, "CREATE_PROJECT", 14) == 0) {
-        handle_create_project(client_socket, buffer);
-    } else if (strncmp(buffer, "CREATE_TASK", 11) == 0) {
-        handle_create_task(client_socket, buffer);
-    } else if (strncmp(buffer, "UPDATE_TASK_STATUS", 18) == 0) {
-        handle_update_task_status(client_socket, buffer);
-    } else if (strncmp(buffer, "ADD_COMMENT", 11) == 0) {
-        handle_add_comment(client_socket, buffer);
-    } else if (strncmp(buffer, "CHAT", 4) == 0) {
-        handle_chat(client_socket, buffer);
-    } else if (strncmp(buffer, "VIDEO_CALL", 10) == 0) {
-        handle_video_call(client_socket, buffer);
+        // Xử lý yêu cầu
+        if (strncmp(buffer, "REGISTER", 8) == 0) {
+            handle_register(client_info->socket, buffer);
+        } else if (strncmp(buffer, "LOGIN", 5) == 0) {
+            handle_login(client_info->socket, buffer);
+        } else if (strncmp(buffer, "CREATE_PROJECT", 14) == 0) {
+            handle_create_project(client_info->socket, buffer);
+        } else if (strncmp(buffer, "CREATE_TASK", 11) == 0) {
+            handle_create_task(client_info->socket, buffer);
+        } else if (strncmp(buffer, "UPDATE_TASK_STATUS", 18) == 0) {
+            handle_update_task_status(client_info->socket, buffer);
+        } else if (strncmp(buffer, "ADD_COMMENT", 11) == 0) {
+            handle_add_comment(client_info->socket, buffer);
+        } else if (strncmp(buffer, "CHAT", 4) == 0) {
+            handle_chat(client_info->socket, buffer);
+        } else if (strncmp(buffer, "VIDEO_CALL", 10) == 0) {
+            handle_video_call(client_info->socket, buffer);
+        }
+
+        memset(buffer, 0, sizeof(buffer));
     }
 
-    send(client_socket, buffer, strlen(buffer), 0);
-    log_message(buffer);
-
-    close(client_socket);
+    close(client_info->socket);
+    free(client_info);
     return NULL;
 }
 
 int main() {
+    remove("project_management.db");
+    
     int rc = sqlite3_open("project_management.db", &db);
     if (rc) {
         fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
         return 1;
     }
+
+    printf("Database opened successfully\n");
+
+    // Read and execute database.sql
+    FILE *sql_file = fopen("database.sql", "r");
+    if (sql_file == NULL) {
+        fprintf(stderr, "Can't open database.sql file\n");
+        return 1;
+    }
+
+    // Read file content
+    fseek(sql_file, 0, SEEK_END);
+    long file_size = ftell(sql_file);
+    fseek(sql_file, 0, SEEK_SET);
+
+    char *sql = malloc(file_size + 1);
+    fread(sql, 1, file_size, sql_file);
+    sql[file_size] = '\0';
+    fclose(sql_file);
+
+    // Execute SQL
+    char *err_msg = 0;
+    rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
+    free(sql);
+
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "SQL error: %s\n", err_msg);
+        sqlite3_free(err_msg);
+        sqlite3_close(db);
+        return 1;
+    }
+
+    printf("Database initialized with database.sql\n");
+    
+    // Verify data
+    char *verify_sql = "SELECT * FROM users;";
+    sqlite3_stmt *stmt;
+    rc = sqlite3_prepare_v2(db, verify_sql, -1, &stmt, 0);
+    if (rc == SQLITE_OK) {
+        printf("Current users in database:\n");
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            printf("Username: %s, Password: %s\n", 
+                sqlite3_column_text(stmt, 1),  // username 
+                sqlite3_column_text(stmt, 2)); // password
+        }
+    }
+    sqlite3_finalize(stmt);
 
     int server_socket, client_socket;
     struct sockaddr_in server_addr, client_addr;
@@ -297,7 +379,12 @@ int main() {
             perror("Accept failed");
             continue;
         }
-        pthread_create(&tid, NULL, handle_client, &client_socket);
+
+        ClientInfo *client_info = malloc(sizeof(ClientInfo));
+        client_info->socket = client_socket;
+        client_info->db = db;
+
+        pthread_create(&tid, NULL, handle_client, client_info);
         pthread_detach(tid);
     }
 

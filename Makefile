@@ -1,9 +1,8 @@
-
 CC = gcc
-CFLAGS = `pkg-config --cflags gtk+-3.0 gstreamer-1.0`
-LDFLAGS = `pkg-config --libs gtk+-3.0 gstreamer-1.0 sqlite3`
+CFLAGS = `pkg-config --cflags gtk+-3.0 gstreamer-1.0` -g
+LDFLAGS = `pkg-config --libs gtk+-3.0 gstreamer-1.0 sqlite3` -pthread
 
-SERVER_SRC = server.c
+SERVER_SRC = server.c database.c
 CLIENT_SRC = client.c
 SERVER_OBJ = $(SERVER_SRC:.c=.o)
 CLIENT_OBJ = $(CLIENT_SRC:.c=.o)
