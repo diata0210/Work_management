@@ -17,31 +17,66 @@ void send_request(const char *request) {
 }
 
 void on_register_clicked(GtkWidget *widget, gpointer data) {
-    send_request("REGISTER username password");
+    const char *username = gtk_entry_get_text(GTK_ENTRY(((GtkWidget **)data)[0]));
+    const char *password = gtk_entry_get_text(GTK_ENTRY(((GtkWidget **)data)[1]));
+    const char *email = gtk_entry_get_text(GTK_ENTRY(((GtkWidget **)data)[2]));
+
+    char request[256];
+    sprintf(request, "REGISTER %s %s %s", username, password, email);
+    send_request(request);
 }
 
 void on_login_clicked(GtkWidget *widget, gpointer data) {
-    send_request("LOGIN username password");
+    const char *username = gtk_entry_get_text(GTK_ENTRY(((GtkWidget **)data)[0]));
+    const char *password = gtk_entry_get_text(GTK_ENTRY(((GtkWidget **)data)[1]));
+
+    char request[256];
+    sprintf(request, "LOGIN %s %s", username, password);
+    send_request(request);
 }
 
 void on_create_project_clicked(GtkWidget *widget, gpointer data) {
-    send_request("CREATE_PROJECT project_name");
+    const char *project_name = gtk_entry_get_text(GTK_ENTRY(((GtkWidget **)data)[0]));
+    const char *description = gtk_entry_get_text(GTK_ENTRY(((GtkWidget **)data)[1]));
+
+    char request[256];
+    sprintf(request, "CREATE_PROJECT 1 %s %s", project_name, description); // Assuming owner_id is 1 for simplicity
+    send_request(request);
 }
 
 void on_create_task_clicked(GtkWidget *widget, gpointer data) {
-    send_request("CREATE_TASK task_name");
+    const char *task_name = gtk_entry_get_text(GTK_ENTRY(((GtkWidget **)data)[0]));
+    const char *status = gtk_entry_get_text(GTK_ENTRY(((GtkWidget **)data)[1]));
+
+    char request[256];
+    sprintf(request, "CREATE_TASK 1 1 %s %s", task_name, status); // Assuming project_id and assigned_to are 1 for simplicity
+    send_request(request);
 }
 
 void on_update_task_status_clicked(GtkWidget *widget, gpointer data) {
-    send_request("UPDATE_TASK_STATUS task_id status");
+    const char *task_id = gtk_entry_get_text(GTK_ENTRY(((GtkWidget **)data)[0]));
+    const char *status = gtk_entry_get_text(GTK_ENTRY(((GtkWidget **)data)[1]));
+
+    char request[256];
+    sprintf(request, "UPDATE_TASK_STATUS %s %s", task_id, status);
+    send_request(request);
 }
 
 void on_add_comment_clicked(GtkWidget *widget, gpointer data) {
-    send_request("ADD_COMMENT task_id comment");
+    const char *task_id = gtk_entry_get_text(GTK_ENTRY(((GtkWidget **)data)[0]));
+    const char *comment = gtk_entry_get_text(GTK_ENTRY(((GtkWidget **)data)[1]));
+
+    char request[256];
+    sprintf(request, "ADD_COMMENT %s 1 %s", task_id, comment); // Assuming user_id is 1 for simplicity
+    send_request(request);
 }
 
 void on_chat_clicked(GtkWidget *widget, gpointer data) {
-    send_request("CHAT message");
+    const char *message = gtk_entry_get_text(GTK_ENTRY(data));
+
+    char request[256];
+    sprintf(request, "CHAT 1 1 %s", message); // Assuming project_id and user_id are 1 for simplicity
+    send_request(request);
 }
 
 void on_video_call_clicked(GtkWidget *widget, gpointer data) {
@@ -110,27 +145,56 @@ void on_video_call_clicked(GtkWidget *widget, gpointer data) {
     gst_object_unref(pipeline);
 }
 
-int main(int argc, char *argv[]) {
-    struct sockaddr_in server_addr;
+GtkWidget *create_entry_with_label(GtkWidget *grid, const char *label_text, int row) {
+    GtkWidget *label = gtk_label_new(label_text);
+    GtkWidget *entry = gtk_entry_new();
+    gtk_grid_attach(GTK_GRID(grid), label, 0, row, 1, 1);
+    gtk_grid_attach(GTK_GRID(grid), entry, 1, row, 1, 1);
+    return entry;
+}
 
-    client_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (client_socket < 0) {
-        perror("Socket creation failed");
-        exit(EXIT_FAILURE);
-    }
+void create_register_window() {
+    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(window), "Register");
+    gtk_window_set_default_size(GTK_WINDOW(window), 300, 200);
+    g_signal_connect(window, "destroy", G_CALLBACK(gtk_widget_destroy), NULL);
 
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(8080);
-    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    GtkWidget *grid = gtk_grid_new();
+    gtk_container_add(GTK_CONTAINER(window), grid);
 
-    if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
-        perror("Connection failed");
-        close(client_socket);
-        exit(EXIT_FAILURE);
-    }
+    GtkWidget *username_entry = create_entry_with_label(grid, "Username:", 0);
+    GtkWidget *password_entry = create_entry_with_label(grid, "Password:", 1);
+    GtkWidget *email_entry = create_entry_with_label(grid, "Email:", 2);
 
-    gtk_init(&argc, &argv);
+    GtkWidget *register_button = gtk_button_new_with_label("Register");
+    GtkWidget *entries[] = {username_entry, password_entry, email_entry};
+    g_signal_connect(register_button, "clicked", G_CALLBACK(on_register_clicked), entries);
+    gtk_grid_attach(GTK_GRID(grid), register_button, 0, 3, 2, 1);
 
+    gtk_widget_show_all(window);
+}
+
+void create_login_window() {
+    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_title(GTK_WINDOW(window), "Login");
+    gtk_window_set_default_size(GTK_WINDOW(window), 300, 200);
+    g_signal_connect(window, "destroy", G_CALLBACK(gtk_widget_destroy), NULL);
+
+    GtkWidget *grid = gtk_grid_new();
+    gtk_container_add(GTK_CONTAINER(window), grid);
+
+    GtkWidget *username_entry = create_entry_with_label(grid, "Username:", 0);
+    GtkWidget *password_entry = create_entry_with_label(grid, "Password:", 1);
+
+    GtkWidget *login_button = gtk_button_new_with_label("Login");
+    GtkWidget *entries[] = {username_entry, password_entry};
+    g_signal_connect(login_button, "clicked", G_CALLBACK(on_login_clicked), entries);
+    gtk_grid_attach(GTK_GRID(grid), login_button, 0, 2, 2, 1);
+
+    gtk_widget_show_all(window);
+}
+
+void create_main_window() {
     GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), "Project Management Client");
     gtk_window_set_default_size(GTK_WINDOW(window), 400, 300);
@@ -140,11 +204,11 @@ int main(int argc, char *argv[]) {
     gtk_container_add(GTK_CONTAINER(window), grid);
 
     GtkWidget *register_button = gtk_button_new_with_label("Register");
-    g_signal_connect(register_button, "clicked", G_CALLBACK(on_register_clicked), NULL);
+    g_signal_connect(register_button, "clicked", G_CALLBACK(create_register_window), NULL);
     gtk_grid_attach(GTK_GRID(grid), register_button, 0, 0, 1, 1);
 
     GtkWidget *login_button = gtk_button_new_with_label("Login");
-    g_signal_connect(login_button, "clicked", G_CALLBACK(on_login_clicked), NULL);
+    g_signal_connect(login_button, "clicked", G_CALLBACK(create_login_window), NULL);
     gtk_grid_attach(GTK_GRID(grid), login_button, 1, 0, 1, 1);
 
     GtkWidget *create_project_button = gtk_button_new_with_label("Create Project");
@@ -172,6 +236,31 @@ int main(int argc, char *argv[]) {
     gtk_grid_attach(GTK_GRID(grid), video_call_button, 1, 3, 1, 1);
 
     gtk_widget_show_all(window);
+}
+
+int main(int argc, char *argv[]) {
+    struct sockaddr_in server_addr;
+
+    client_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (client_socket < 0) {
+        perror("Socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(8080);
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    if (connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+        perror("Connection failed");
+        close(client_socket);
+        exit(EXIT_FAILURE);
+    }
+
+    gtk_init(&argc, &argv);
+
+    create_main_window();
+
     gtk_main();
 
     close(client_socket);
