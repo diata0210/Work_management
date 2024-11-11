@@ -27,7 +27,7 @@ This application allows users to create, assign, and track the progress of tasks
 - View Gantt chart of the project to track progress (2 points)
 - Chat with project members (2 points)
 - Create a user interface (3 points)
-- Video call (2 points)
+- Video call (5-10 points)
 
 ## Instructions to Run the Project
 
@@ -41,6 +41,8 @@ Make sure you have the following libraries installed on your system:
 
 On Ubuntu, you can install these libraries using the following commands:
 
+sudo apt-get update
+sudo apt-get install build-essential
 sudo apt-get install libsqlite3-dev
-sudo apt-get install libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good
+sudo apt-get install libgstreamer1.0-dev
 sudo apt-get install libgtk-3-dev

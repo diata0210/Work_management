@@ -1,0 +1,46 @@
+@startuml Task Management System
+
+actor "User" as user
+
+rectangle "Task Management System" {
+    package "Account Management" {
+        usecase "Register" as UC1
+        usecase "Login" as UC2
+    }
+    
+    package "Project Management" {
+        usecase "Create Project" as UC3
+        usecase "Invite Members" as UC4
+        usecase "Create Task" as UC5
+        usecase "Assign Task" as UC6
+        usecase "Update Task Status" as UC7
+        usecase "Add Comments" as UC8
+        usecase "Upload Attachments" as UC9
+        usecase "View Gantt Chart" as UC10
+    }
+    
+    package "Communication" {
+        usecase "Chat" as UC11
+        usecase "Video Call" as UC12
+    }
+}
+
+' User interactions
+user --> UC1
+user --> UC2
+user --> UC3
+user --> UC4
+user --> UC5
+user --> UC6
+user --> UC7
+user --> UC8
+user --> UC9
+user --> UC10
+user --> UC11
+user --> UC12
+
+' Notes
+note "Status Types:\n- Not Started\n- In Progress\n- Completed" as N1
+N1 .. UC7
+
+@enduml
