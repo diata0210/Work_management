@@ -1,25 +1,56 @@
-
+# Biến cấu hình
 CC = gcc
-CFLAGS = `pkg-config --cflags gtk+-3.0 gstreamer-1.0`
-LDFLAGS = `pkg-config --libs gtk+-3.0 gstreamer-1.0 sqlite3`
+CFLAGS = -Wall -Wextra -g -pthread -I./src/server/include
+LDFLAGS = -lsqlite3
+BIN_DIR = ./bin
 
-SERVER_SRC = server.c
-CLIENT_SRC = client.c
+# Tệp thực thi server
+SERVER_BIN = $(BIN_DIR)/server
+
+# Thư mục mã nguồn
+SERVER_SRC_DIR = ./src/server
+
+# Các tệp nguồn và object cho server
+SERVER_SRC = $(SERVER_SRC_DIR)/main.c \
+             $(SERVER_SRC_DIR)/network/socket_handler.c \
+             $(SERVER_SRC_DIR)/database/db_init.c \
+             $(SERVER_SRC_DIR)/database/task_dao.c \
+             $(SERVER_SRC_DIR)/database/project_dao.c \
+             $(SERVER_SRC_DIR)/database/user_dao.c \
+             $(SERVER_SRC_DIR)/logger/logger.c \
+             $(SERVER_SRC_DIR)/message_handlers/chat_message_handler.c \
+             $(SERVER_SRC_DIR)/message_handlers/control_message_handler.c \
+             $(SERVER_SRC_DIR)/message_handlers/data_message_handler.c \
+             $(SERVER_SRC_DIR)/message_handlers/video_message_handler.c
+
 SERVER_OBJ = $(SERVER_SRC:.c=.o)
-CLIENT_OBJ = $(CLIENT_SRC:.c=.o)
 
-all: server client
+# Quy tắc mặc định
+all: $(BIN_DIR) $(SERVER_BIN)
 
-server: $(SERVER_OBJ)
-	$(CC) -o $@ $^ $(LDFLAGS)
+# Biên dịch server
+$(SERVER_BIN): $(SERVER_OBJ)
+	@echo "Linking server binary..."
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+	@echo "Server build complete!"
 
-client: $(CLIENT_OBJ)
-	$(CC) -o $@ $^ $(LDFLAGS)
-
+# Biên dịch các tệp .o từ .c
 %.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS)
+	@mkdir -p $(dir $@)
+	@echo "Compiling $<..."
+	$(CC) $(CFLAGS) -c $< -o $@
 
+# Tạo thư mục bin nếu chưa tồn tại
+$(BIN_DIR):
+	@mkdir -p $(BIN_DIR)
+
+# Chạy server
+run: $(SERVER_BIN)
+	@echo "Running server..."
+	./$(SERVER_BIN)
+
+# Dọn dẹp các tệp biên dịch
 clean:
-	rm -f $(SERVER_OBJ) $(CLIENT_OBJ) server client
-
-.PHONY: all clean
+	@echo "Cleaning up server build files..."
+	@rm -rf $(SERVER_OBJ) $(SERVER_BIN)
+	@echo "Clean complete!"
