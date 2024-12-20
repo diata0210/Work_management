@@ -9,17 +9,17 @@
 extern sqlite3 *db;
 
 // Hàm xử lý đăng nhập
-void handle_login(int client_fd, const char* username, const char* password) {
-    printf("%s %s",username, password);
-    int rc = login_user(db, username, password);
-    if (rc != -1 && rc != 0) {
-        send_data(client_fd, "LOGIN_SUCCESS");
-        log_info("User %s logged in successfully", username);
-    } else {
-        send_data(client_fd, "LOGIN_FAILED");
-        log_error("Login failed for user %s", username);
-    }
-}
+// void handle_login(int client_fd, const char* username, const char* password) {
+//     printf("%s %s",username, password);
+//     int rc = login_user(db, username, password);
+//     if (rc != -1 && rc != 0) {
+//         send_data(client_fd, "LOGIN_SUCCESS");
+//         log_info("User %s logged in successfully", username);
+//     } else {
+//         send_data(client_fd, "LOGIN_FAILED");
+//         log_error("Login failed for user %s", username);
+//     }
+// }
 
 // Hàm xử lý đăng ký tài khoản
 void handle_register(int client_fd, const char* username, const char* password) {
@@ -37,7 +37,7 @@ void handle_register(int client_fd, const char* username, const char* password) 
 
 // Hàm xử lý tạo dự án
 void handle_create_project(int client_fd, const char* project_name, const char* description, int created_by) {
-    if (insert_project(db, project_name, description, created_by) == SQLITE_OK) {
+    if ((insert_project(db, project_name, description, created_by) == SQLITE_OK)) {
         send_data(client_fd, "PROJECT_CREATED");
         log_info("Project %s created successfully", project_name);
     } else {

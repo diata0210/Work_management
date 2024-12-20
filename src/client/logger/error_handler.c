@@ -10,14 +10,6 @@ void handle_error(const char *message, int is_fatal) {
     }
 }
 
-// Hàm xử lý lỗi SQL - ghi lỗi SQL và dọn dẹp tài nguyên nếu cần
-void handle_sql_error(sqlite3 *db, const char *message) {
-    if (db != NULL) {
-        fprintf(stderr, "SQL ERROR: %s - %s\n", message, sqlite3_errmsg(db));
-    } else {
-        fprintf(stderr, "SQL ERROR: %s\n", message);
-    }
-}
 
 // Hàm xử lý lỗi socket - ghi lỗi socket và đóng kết nối nếu cần
 void handle_socket_error(int socket_fd, const char *message) {

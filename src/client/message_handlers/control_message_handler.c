@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <stdbool.h>
 #include "control_message_handler.h"
-#include "socket.h"  // Giả sử bạn có một hàm send_data()
-#include "logger.h"
+#include "../network/socket.h"  // Giả sử bạn có một hàm send_data()
+#include "../logger/logger.h"
 
 // Hàm gửi thông điệp đăng nhập tới server
 void send_login(int client_fd, const char* username, const char* password) {
@@ -35,6 +36,17 @@ void send_register(int client_fd, const char* username, const char* password) {
     }
 }
 
+bool send_get_projects_request(char *response_buffer, int buffer_size) {
+    const char *request = "CONTROL GET_PROJECT";
+    memset(response_buffer, 0, buffer_size);
+
+    if (send_request(request, response_buffer)) {
+        return true;
+    }
+
+    fprintf(stderr, "Failed to send GET_PROJECT request.\n");
+    return false;
+}
 // Hàm gửi thông điệp tạo dự án tới server
 void send_create_project(int client_fd, const char* project_name, const char* description, int created_by) {
     char create_project_message[512];

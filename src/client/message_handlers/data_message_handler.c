@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include "data_message_handler.h"
-#include "socket_handler.h"  // Giả sử bạn có một hàm send_data()
-#include "logger.h"
+#include "../network/socket.h"  // Giả sử bạn có một hàm send_data()
+#include "../logger/logger.h"
 
 // Hàm gửi thông điệp cập nhật trạng thái task tới server
 void send_task_update(int client_fd, int task_id, const char* status) {
@@ -53,7 +53,7 @@ void send_file_attachment(int client_fd, int task_id, const char* filename, cons
 }
 
 // Hàm xử lý thông điệp data từ server
-void handle_data_message(int client_fd,int userid, const char* message) {
+void handle_data_message(int client_fd, const char* message) {
     char command[20];
     sscanf(message, "%s", command);
 

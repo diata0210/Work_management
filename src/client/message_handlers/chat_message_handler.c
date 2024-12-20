@@ -3,8 +3,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include "chat_message_handler.h"
-#include "socket_handler.h"  // Giả sử bạn có một hàm send_chat_to_member()
-#include "logger.h"
+#include "../network/socket.h"  // Giả sử bạn có một hàm send_chat_to_member()
 
 // Hàm gửi tin nhắn chat tới một thành viên trong nhóm
 void send_chat_to_member(int client_fd, int member_fd, const char* message) {

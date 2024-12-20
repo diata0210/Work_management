@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     }
 
     log_info("Server is running on port %d...", server_port);
-
+    initialize_user_sockets();
     // Vòng lặp chính để chấp nhận các kết nối client
     while (1) {
         int client_fd = accept_client_connection(server_fd);
@@ -67,22 +67,25 @@ int main(int argc, char *argv[]) {
 
         pid_t pid = fork();
         if (pid == 0) {  // Tiến trình con
-            close(server_fd);  // Đóng server_fd trong tiến trình con
+    close(server_fd);  // Đóng server_fd trong tiến trình con
 
-            // Nhận thông điệp từ client
-            char buffer[MAX_BUFFER];
-            int bytes_received = receive_message(client_fd, buffer, MAX_BUFFER);
-            if (bytes_received > 0) {
-                // Gọi hàm handle_client_message với client_fd và thông điệp nhận được
-                printf("%s", buffer);
-                handle_client_message(client_fd, buffer);
-            } else {
-                log_error("Failed to receive message from client");
-            }
+    char buffer[MAX_BUFFER];
+    int bytes_received;
 
-            close_connection(client_fd);
-            exit(0);  // Kết thúc tiến trình con
-        } else if (pid > 0) {  // Tiến trình cha
+    // Vòng lặp để nhận và xử lý thông điệp từ client
+    while ((bytes_received = receive_message(client_fd, buffer, MAX_BUFFER)) > 0) {
+        handle_client_message(client_fd, buffer);
+    }
+
+    if (bytes_received == 0) {
+        log_info("Client disconnected");
+    } else if (bytes_received < 0) {
+        log_error("Error receiving data from client");
+    }
+
+    close_connection(client_fd);
+    exit(0);  // Kết thúc tiến trình con
+} else if (pid > 0) {  // Tiến trình cha
             close(client_fd);  // Đóng client_fd trong tiến trình cha
         } else {
             log_error("Failed to fork process for client");

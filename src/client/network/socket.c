@@ -71,7 +71,9 @@
 static int sock_fd = -1;
 
 bool initialize_socket() {
+    
     sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    
     if (sock_fd < 0) {
         perror("Socket creation failed");
         return false;

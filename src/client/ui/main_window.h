@@ -3,17 +3,13 @@
 
 #include <gtk/gtk.h>
 
-// Cấu trúc chứa các widget của cửa sổ chính
-typedef struct {
-    GtkWidget *window;           // Cửa sổ chính
-    GtkWidget *projects_tree;    // Cây dự án
-    GtkWidget *tasks_tree;       // Cây công việc
-    GtkWidget *chat_window;      // Cửa sổ chat
-} MainWindow;
+// Kích thước bộ đệm cho phản hồi server
+#define BUFFER_SIZE 1024
 
-// Khai báo các hàm để khởi tạo, hiển thị, và hủy cửa sổ chính
-void main_window_init(MainWindow *main_window); // Khởi tạo cửa sổ chính
-void main_window_show(MainWindow *main_window); // Hiển thị cửa sổ chính
-void main_window_destroy(MainWindow *main_window); // Hủy cửa sổ chính
+// Hàm để phân tích phản hồi từ server và thêm project vào danh sách giao diện
+void add_projects_to_list(GtkListBox *project_list, const char *response);
 
-#endif // MAIN_WINDOW_H
+// Hàm tạo và trả về một cửa sổ chính hiển thị danh sách project
+GtkWidget *create_main_window();
+
+#endif /* MAIN_WINDOW_H */

@@ -21,7 +21,7 @@ project/
 │ │ │ ├── task_view.c # Giao diện công việc
 │ │ │ ├── gantt_view.c # Hiển thị biểu đồ Gantt
 │ │ │ ├── attachment_handler.c # Xử lý file đính kèm
-│ │ │
+│ │ │__ logger
 │ │ ├── network/ # Xử lý kết nối mạng
 │ │ │ ├── socket.c # Xử lý kết nối socket
 │ │ │ └── webrtc.c # Xử lý WebRTC cho video call
