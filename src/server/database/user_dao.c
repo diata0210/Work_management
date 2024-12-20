@@ -22,7 +22,7 @@ int insert_user(sqlite3 *db, const char *username, const char *password_hash, co
 
 // Kiểm tra thông tin đăng nhập - Xác thực người dùng
 int login_user(sqlite3 *db, const char *username, const char *password_hash) {
-    const char *sql = "SELECT id FROM users WHERE username = ? AND password_hash = ?";
+    const char *sql = "SELECT user_id FROM users WHERE username = ? AND password_hash = ?";
     sqlite3_stmt *stmt;
     int userid = -1;
 

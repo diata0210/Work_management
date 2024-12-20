@@ -139,6 +139,7 @@ void remove_user_socket(int client_fd) {
 
 void handle_login(int client_fd, const char* username, const char* password) {
     int userid = login_user(db, username, password);
+    printf("%d",userid);
     if (userid != -1) {
         if (add_user_socket(userid, client_fd) == 0) {
             send_data(client_fd, "LOGIN_SUCCESS");
@@ -159,6 +160,7 @@ void handle_login(int client_fd, const char* username, const char* password) {
 void handle_client_message(int client_fd, const char* message) {
     // Tìm userid dựa trên client_fd
     int userid = find_userid_by_client_fd(client_fd);
+    printf("%d", userid);
 
     // Xử lý thông điệp CONTROL (không cần kiểm tra trạng thái đăng nhập)
     if (strncmp(message, "CONTROL", 7) == 0) {

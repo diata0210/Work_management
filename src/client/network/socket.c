@@ -135,5 +135,6 @@ bool receive_response(char *response, int max_length) {
     }
     
     response[bytes_received] = '\0';
+    printf("%s",response);
     return true;
 }

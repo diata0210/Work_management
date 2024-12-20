@@ -13,7 +13,7 @@ void send_login(int client_fd, const char* username, const char* password);
 void send_register(int client_fd, const char* username, const char* password);
 bool send_get_projects_request(char *response_buffer, int buffer_size);
 // Hàm gửi thông điệp tạo dự án tới server
-void send_create_project(int client_fd, const char* project_name, const char* description, int created_by);
+bool send_create_project( const char* project_name, const char* description) ;
 
 // Hàm gửi thông điệp mời thành viên vào dự án
 void send_add_member(int client_fd, int project_id, int user_id, const char *role);

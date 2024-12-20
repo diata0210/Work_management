@@ -41,6 +41,7 @@ bool send_get_projects_request(char *response_buffer, int buffer_size) {
     memset(response_buffer, 0, buffer_size);
 
     if (send_request(request, response_buffer)) {
+        
         return true;
     }
 
@@ -48,19 +49,22 @@ bool send_get_projects_request(char *response_buffer, int buffer_size) {
     return false;
 }
 // Hàm gửi thông điệp tạo dự án tới server
-void send_create_project(int client_fd, const char* project_name, const char* description, int created_by) {
+bool send_create_project( const char* project_name, const char* description) {
     char create_project_message[512];
-
+    char response_buffer[1024];
+    memset(response_buffer, 0, 1024);
     // Tạo thông điệp tạo dự án theo định dạng: CREATE_PROJECT <project_name> <description> <created_by>
     snprintf(create_project_message, sizeof(create_project_message), 
-             "CONTROL CREATE_PROJECT %s %s %d", project_name, description, created_by);
-
-    // Gửi thông điệp tạo dự án tới server
-    if (send(client_fd, create_project_message, strlen(create_project_message), 0) == -1) {
-        perror("send_create_project() failed");
-    } else {
-        printf("Create project message sent to server: %s\n", create_project_message);
+             "CONTROL CREATE_PROJECT %s %s", project_name, description);
+    if (send_request(create_project_message, response_buffer)) {
+        if (strcmp(response_buffer, "PROJECT_CREATED") == 0){
+            return true;
+        }
     }
+
+    fprintf(stderr, "Failed to send CREATE_PROJECT request.\n");
+    return false;
+    
 }
 
 // Hàm gửi thông điệp mời thành viên vào dự án
@@ -91,12 +95,14 @@ void handle_control_message(int client_fd, const char* message) {
         char username[50], password[50];
         sscanf(message + 9, "%s %s", username, password); // Bỏ qua "REGISTER "
         send_register(client_fd, username, password);
-    } else if (strcmp(command, "CREATE_PROJECT") == 0) {
-        char project_name[100], description[255];
-        int created_by;
-        sscanf(message + 15, "%s %s %d", project_name, description, &created_by); // Bỏ qua "CREATE_PROJECT "
-        send_create_project(client_fd, project_name, description, created_by);
-    } else if (strcmp(command, "ADD_MEMBER") == 0) {
+    }
+    //  else if (strcmp(command, "CREATE_PROJECT") == 0) {
+    //     char project_name[100], description[255];
+    //     int created_by;
+    //     sscanf(message + 15, "%s %s %d", project_name, description,h); // Bỏ qua "CREATE_PROJECT "
+    //     send_create_project(client_fd, project_name, description, created_by);
+    // } 
+    else if (strcmp(command, "ADD_MEMBER") == 0) {
         int project_id, user_id;
         char role[20];
         sscanf(message + 11, "%d %d %s", &project_id, &user_id, role); // Bỏ qua "ADD_MEMBER "

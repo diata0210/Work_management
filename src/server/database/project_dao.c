@@ -6,6 +6,9 @@
 int insert_project(sqlite3 *db, const char *name, const char *description, int created_by) {
     char *err_msg = 0;
     char sql[256];
+    int project_id = -1;
+
+    // Thêm dự án vào bảng projects
     snprintf(sql, sizeof(sql), "INSERT INTO projects (name, description, created_by, status) VALUES ('%s', '%s', %d, 'ongoing');", 
              name, description, created_by);
 
@@ -16,7 +19,37 @@ int insert_project(sqlite3 *db, const char *name, const char *description, int c
         return rc;
     }
 
-    printf("Project added successfully\n");
+    // Lấy ID của dự án vừa được thêm
+    const char *get_last_id = "SELECT last_insert_rowid();";
+    sqlite3_stmt *stmt;
+
+    rc = sqlite3_prepare_v2(db, get_last_id, -1, &stmt, 0);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to retrieve last inserted ID: %s\n", sqlite3_errmsg(db));
+        return rc;
+    }
+
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        project_id = sqlite3_column_int(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+
+    if (project_id == -1) {
+        fprintf(stderr, "Failed to get project ID\n");
+        return SQLITE_ERROR;
+    }
+
+    // Thêm người tạo vào bảng project_members với vai trò admin
+    snprintf(sql, sizeof(sql), "INSERT INTO project_members (project_id, user_id, role) VALUES (%d, %d, 'admin');", project_id, created_by);
+
+    rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "SQL error: %s\n", err_msg);
+        sqlite3_free(err_msg);
+        return rc;
+    }
+
+    printf("Project added successfully with creator as admin\n");
     return SQLITE_OK;
 }
 

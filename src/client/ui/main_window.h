@@ -3,13 +3,20 @@
 
 #include <gtk/gtk.h>
 
-// Kích thước bộ đệm cho phản hồi server
-#define BUFFER_SIZE 1024
+// Biến toàn cục đại diện cho cửa sổ chính
+extern GtkWidget *main_window;
 
-// Hàm để phân tích phản hồi từ server và thêm project vào danh sách giao diện
+// Hàm để phân tích và thêm project vào giao diện
 void add_projects_to_list(GtkListBox *project_list, const char *response);
 
-// Hàm tạo và trả về một cửa sổ chính hiển thị danh sách project
+// Hàm callback khi nhấn nút Tạo Project
+
+// Hàm callback khi hoàn tất tạo project
+
+// Hàm tạo màn hình chính hiển thị danh sách project
 GtkWidget *create_main_window();
 
-#endif /* MAIN_WINDOW_H */
+// Hàm tạo cửa sổ "Create Project"
+GtkWidget *create_create_project_window();
+
+#endif // MAIN_WINDOW_H

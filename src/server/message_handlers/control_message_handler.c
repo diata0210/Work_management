@@ -4,6 +4,8 @@
 #include "user_dao.h"
 #include "project_dao.h"
 #include "logger.h"
+#include <stdlib.h>
+
 #include "socket_handler.h"
 
 extern sqlite3 *db;
@@ -37,6 +39,8 @@ void handle_register(int client_fd, const char* username, const char* password) 
 
 // Hàm xử lý tạo dự án
 void handle_create_project(int client_fd, const char* project_name, const char* description, int created_by) {
+    printf("%s %s %d", project_name, description, created_by);
+    fflush(stdout);
     if ((insert_project(db, project_name, description, created_by) == SQLITE_OK)) {
         send_data(client_fd, "PROJECT_CREATED");
         log_info("Project %s created successfully", project_name);
@@ -67,20 +71,20 @@ void handle_get_projects(int client_fd, int user_id) {
         return;
     }
 
-    char response[1024];
-    snprintf(response, sizeof(response), "PROJECT_LIST_COUNT %d\n", projects.count);
-    send_data(client_fd, response);
+    char response[4096]; // Tăng kích thước bộ đệm nếu cần
+    response[0] = '\0'; // Đảm bảo chuỗi rỗng ban đầu
 
     for (int i = 0; i < projects.count; i++) {
-        snprintf(response, sizeof(response), "PROJECT_ID: %d, NAME: %s\n",
+        char project_line[512];
+        snprintf(project_line, sizeof(project_line), "PROJECT_ID: %d, NAME: %s\n",
                  projects.projects[i].project_id, projects.projects[i].name);
-        send_data(client_fd, response);
+        strncat(response, project_line, sizeof(response) - strlen(response) - 1);
     }
-
+    printf("%s", response);
+    send_data(client_fd, response); // Gửi toàn bộ dữ liệu một lần
     free(projects.projects); // Giải phóng bộ nhớ
     log_info("Sent project list to user %d", user_id);
 }
-
 
 void handle_control_message(int client_fd,int userid, const char* message) {
     char command[20];
@@ -95,13 +99,16 @@ void handle_control_message(int client_fd,int userid, const char* message) {
         sscanf(message + 9, "%s %s", username, password); // Bỏ qua "REGISTER "
         handle_register(client_fd, username, password);
     } else if (strcmp(command, "GET_PROJECT") == 0) {
-        sscanf(message + 12, "%s %s", userid); 
+        
+        
         handle_get_projects(client_fd,userid );
     }
      else if (strcmp(command, "CREATE_PROJECT") == 0) {
         char project_name[100], description[255];
-        int created_by;
-        sscanf(message + 15, "%s %s %d", project_name, description, &created_by); // Bỏ qua "CREATE_PROJECT "
+        int created_by= find_userid_by_client_fd(client_fd);
+        sscanf(message + 15, "%s %s", project_name, description);
+        
+         // Bỏ qua "CREATE_PROJECT "
         handle_create_project(client_fd, project_name, description, created_by);
     } else if (strcmp(command, "ADD_MEMBER") == 0) {
         int project_id, user_id;
