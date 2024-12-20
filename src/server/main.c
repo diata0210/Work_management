@@ -1,18 +1,43 @@
+// main.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <string.h>
 #include "socket_handler.h"
 #include "config.h"
 #include "logger.h"
+#include "db_init.h"  // Bao gồm db_handler để sử dụng các hàm DB
 
 void sigchld_handler(int sig) {
     (void)sig;  
     while (waitpid(-1, NULL, WNOHANG) > 0); 
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    // Kiểm tra nếu không có đối số cổng
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <port>\n", argv[0]);
+        exit(1);
+    }
+
+    // Chuyển đổi đối số cổng từ chuỗi sang số nguyên
+    int server_port = atoi(argv[1]);
+
+    // Kiểm tra nếu cổng không hợp lệ (ví dụ, nếu cổng <= 1024 hoặc không phải số)
+    if (server_port <= 1024 || server_port > 65535) {
+        fprintf(stderr, "Invalid port number. Please choose a port between 1025 and 65535.\n");
+        exit(1);
+    }
+
+    // Mở kết nối tới cơ sở dữ liệu
+    if (initialize_database("/home/parallels/Work_management-server/resources/database/project.db") != 0) {  // Đảm bảo sử dụng đường dẫn đúng tới DB
+        log_error("Failed to open database.");
+        exit(1);
+    }
+
+    // Thiết lập hàm xử lý tín hiệu SIGCHLD
     struct sigaction sa;
     sa.sa_handler = sigchld_handler;
     sigemptyset(&sa.sa_mask);
@@ -22,14 +47,16 @@ int main() {
         exit(1);
     }
 
-    int server_fd = setup_server_socket(SERVER_PORT);
+    // Thiết lập socket cho server
+    int server_fd = setup_server_socket(server_port);
     if (server_fd < 0) {
         log_error("Failed to set up server socket");
         return 1;
     }
 
-    log_info("Server is running...");
+    log_info("Server is running on port %d...", server_port);
 
+    // Vòng lặp chính để chấp nhận các kết nối client
     while (1) {
         int client_fd = accept_client_connection(server_fd);
         
@@ -39,29 +66,32 @@ int main() {
         }
 
         pid_t pid = fork();
-        if (pid == 0) {  
-            close(server_fd);  
+        if (pid == 0) {  // Tiến trình con
+            close(server_fd);  // Đóng server_fd trong tiến trình con
 
             // Nhận thông điệp từ client
             char buffer[MAX_BUFFER];
             int bytes_received = receive_message(client_fd, buffer, MAX_BUFFER);
             if (bytes_received > 0) {
                 // Gọi hàm handle_client_message với client_fd và thông điệp nhận được
+                printf("%s", buffer);
                 handle_client_message(client_fd, buffer);
             } else {
                 log_error("Failed to receive message from client");
             }
 
             close_connection(client_fd);
-            exit(0); 
-        } else if (pid > 0) { 
-            close(client_fd); 
+            exit(0);  // Kết thúc tiến trình con
+        } else if (pid > 0) {  // Tiến trình cha
+            close(client_fd);  // Đóng client_fd trong tiến trình cha
         } else {
             log_error("Failed to fork process for client");
             close_connection(client_fd);
         }
     }
 
-    close(server_fd); 
+    // Đóng kết nối DB khi server dừng
+    close_database();
+    close(server_fd);  // Đóng server_fd khi server kết thúc
     return 0;
 }

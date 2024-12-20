@@ -22,22 +22,32 @@ int insert_user(sqlite3 *db, const char *username, const char *password_hash, co
 
 // Kiểm tra thông tin đăng nhập - Xác thực người dùng
 int login_user(sqlite3 *db, const char *username, const char *password_hash) {
-    char sql[256];
+    const char *sql = "SELECT id FROM users WHERE username = ? AND password_hash = ?";
     sqlite3_stmt *stmt;
+    int userid = -1;
 
-    snprintf(sql, sizeof(sql), "SELECT * FROM users WHERE username = '%s' AND password_hash = '%s';", username, password_hash);
-
+    // Chuẩn bị câu truy vấn
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
     if (rc != SQLITE_OK) {
-        fprintf(stderr, "Failed to execute statement: %s\n", sqlite3_errmsg(db));
-        return rc;
+        fprintf(stderr, "Failed to prepare statement: %s\n", sqlite3_errmsg(db));
+        return -1; // Trả về -1 nếu có lỗi
     }
 
-    int login_successful = (sqlite3_step(stmt) == SQLITE_ROW);  // Có dòng nào khớp thì thành công
+    // Gắn giá trị cho các tham số truy vấn
+    sqlite3_bind_text(stmt, 1, username, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, password_hash, -1, SQLITE_STATIC);
+
+    // Thực thi truy vấn và kiểm tra kết quả
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        userid = sqlite3_column_int(stmt, 0); // Lấy cột đầu tiên (id)
+    }
+
+    // Giải phóng tài nguyên
     sqlite3_finalize(stmt);
 
-    return login_successful ? SQLITE_OK : SQLITE_ERROR;
+    return userid; // Trả về userid nếu thành công, hoặc -1 nếu thất bại
 }
+
 
 // Kiểm tra xem người dùng có tồn tại không
 int user_exists(sqlite3 *db, const char *username) {

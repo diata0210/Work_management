@@ -38,25 +38,62 @@ int add_member_to_project(sqlite3 *db, int project_id, int user_id, const char *
 }
 
 // Lấy tất cả dự án của một user
-int get_projects_by_user(sqlite3 *db, int user_id) {
-    const char *sql = "SELECT projects.project_id, projects.name FROM projects "
+ProjectArray get_projects_by_user(sqlite3 *db, int user_id) {
+    const char *sql = "SELECT projects.project_id, projects.name, projects.description FROM projects "
                       "JOIN project_members ON projects.project_id = project_members.project_id "
                       "WHERE project_members.user_id = ?";
     sqlite3_stmt *stmt;
+    ProjectArray result = {NULL, 0};
 
     int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Failed to fetch projects: %s\n", sqlite3_errmsg(db));
-        return rc;
+        return result;
     }
 
     sqlite3_bind_int(stmt, 1, user_id);
+
+    // Đếm số lượng dự án
+    int project_count = 0;
     while (sqlite3_step(stmt) == SQLITE_ROW) {
-        int project_id = sqlite3_column_int(stmt, 0);
+        project_count++;
+    }
+
+    // Quay lại đầu câu truy vấn
+    sqlite3_reset(stmt);
+
+    // Cấp phát bộ nhớ cho mảng dự án
+    result.projects = (Project *)malloc(project_count * sizeof(Project));
+    if (result.projects == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        sqlite3_finalize(stmt);
+        return result;
+    }
+    result.count = project_count;
+
+    // Lấy dữ liệu
+    int index = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        result.projects[index].project_id = sqlite3_column_int(stmt, 0);
         const char *name = (const char *)sqlite3_column_text(stmt, 1);
-        printf("Project ID: %d, Name: %s\n", project_id, name);
+        const char *description = (const char *)sqlite3_column_text(stmt, 2);
+
+        strncpy(result.projects[index].name, name, sizeof(result.projects[index].name) - 1);
+        result.projects[index].name[sizeof(result.projects[index].name) - 1] = '\0';
+
+        strncpy(result.projects[index].description, description, sizeof(result.projects[index].description) - 1);
+        result.projects[index].description[sizeof(result.projects[index].description) - 1] = '\0';
+
+        index++;
     }
 
     sqlite3_finalize(stmt);
-    return SQLITE_OK;
+    return result;
+}
+void free_project_array(ProjectArray *project_array) {
+    if (project_array->projects != NULL) {
+        free(project_array->projects);
+        project_array->projects = NULL;
+        project_array->count = 0;
+    }
 }

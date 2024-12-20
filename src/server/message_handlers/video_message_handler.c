@@ -81,7 +81,7 @@ void handle_ice_candidate(int client_fd, const char* candidate) {
 }
 
 // Hàm phân loại và xử lý thông điệp video (OFFER, ANSWER, ICE)
-void handle_video_message(int client_fd, const char* message) {
+void handle_video_message(int client_fd,int userid, const char* message) {
     if (strncmp(message, "OFFER", 5) == 0) {
         handle_offer(client_fd, message + 6);
     } else if (strncmp(message, "ANSWER", 6) == 0) {

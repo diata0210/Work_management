@@ -11,8 +11,32 @@
 #include "video_message_handler.h"
 #include "config.h"
 #include "logger.h"
-
+#include "user_dao.h"
 #define BUFFER_SIZE MAX_BUFFER
+
+#include <pthread.h> // Thêm để sử dụng mutex
+
+#define MAX_USERS 100  // Giới hạn số lượng người dùng
+
+extern sqlite3 *db;
+
+typedef struct {
+    int userid;
+    int client_fd;
+} UserSocket;
+
+UserSocket user_sockets[MAX_USERS];
+pthread_mutex_t user_sockets_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+// Khởi tạo mảng user_sockets
+void initialize_user_sockets() {
+    for (int i = 0; i < MAX_USERS; i++) {
+        user_sockets[i].userid = -1;
+        user_sockets[i].client_fd = -1;
+    }
+}
+
+
 
 // Khởi tạo server socket
 int setup_server_socket(int port) {
@@ -62,20 +86,112 @@ int accept_client_connection(int server_fd) {
     return client_fd;
 }
 
-// Phân loại và xử lý các thông điệp từ client
-void handle_client_message(int client_fd, const char* message) {
-    if (strncmp(message, "CONTROL", 7) == 0) {
-        handle_control_message(client_fd, message + 8);  // Gọi đến handler điều khiển
-    } else if (strncmp(message, "DATA", 4) == 0) {
-        handle_data_message(client_fd, message + 5);  // Gọi đến handler dữ liệu
-    } else if (strncmp(message, "CHAT", 4) == 0) {
-        handle_chat_message(client_fd, message + 5);  // Gọi đến handler chat
-    } else if (strncmp(message, "VIDEO", 5) == 0) {
-        handle_video_message(client_fd, message + 6);  // Gọi đến handler video
+int find_userid_by_client_fd(int client_fd) {
+    pthread_mutex_lock(&user_sockets_mutex);
+    for (int i = 0; i < MAX_USERS; i++) {
+        if (user_sockets[i].client_fd == client_fd) {
+            int userid = user_sockets[i].userid;
+            pthread_mutex_unlock(&user_sockets_mutex);
+            return userid;
+        }
+    }
+    pthread_mutex_unlock(&user_sockets_mutex);
+    return -1;  // Không tìm thấy
+}
+
+
+int find_client_fd_by_userid(int userid) {
+    pthread_mutex_lock(&user_sockets_mutex);
+    for (int i = 0; i < MAX_USERS; i++) {
+        if (user_sockets[i].userid == userid) {
+            int client_fd = user_sockets[i].client_fd;
+            pthread_mutex_unlock(&user_sockets_mutex);
+            return client_fd;
+        }
+    }
+    pthread_mutex_unlock(&user_sockets_mutex);
+    return -1;  // Không tìm thấy
+}
+int add_user_socket(int userid, int client_fd) {
+    pthread_mutex_lock(&user_sockets_mutex);
+    for (int i = 0; i < MAX_USERS; i++) {
+        if (user_sockets[i].userid == -1) {  // Vị trí trống
+            user_sockets[i].userid = userid;
+            user_sockets[i].client_fd = client_fd;
+            pthread_mutex_unlock(&user_sockets_mutex);
+            return 0;  // Thành công
+        }
+    }
+    pthread_mutex_unlock(&user_sockets_mutex);
+    return -1;  // Mảng đầy
+}
+void remove_user_socket(int client_fd) {
+    pthread_mutex_lock(&user_sockets_mutex);
+    for (int i = 0; i < MAX_USERS; i++) {
+        if (user_sockets[i].client_fd == client_fd) {
+            user_sockets[i].userid = -1;
+            user_sockets[i].client_fd = -1;
+            break;
+        }
+    }
+    pthread_mutex_unlock(&user_sockets_mutex);
+}
+
+void handle_login(int client_fd, const char* username, const char* password) {
+    int userid = login_user(db, username, password);
+    if (userid != -1) {
+        if (add_user_socket(userid, client_fd) == 0) {
+            send_data(client_fd, "LOGIN_SUCCESS");
+            log_info("User %s (ID: %d) logged in successfully", username, userid);
+        } else {
+            send_data(client_fd, "LOGIN_FAILED_NO_SPACE");
+            log_error("No space to store user %s (ID: %d)", username, userid);
+        }
     } else {
-        log_error("Unknown message type: %s", message);
+        send_data(client_fd, "LOGIN_FAILED");
+        log_error("Login failed for user %s", username);
     }
 }
+
+
+
+// Phân loại và xử lý các thông điệp từ client
+void handle_client_message(int client_fd, const char* message) {
+    // Tìm userid dựa trên client_fd
+    int userid = find_userid_by_client_fd(client_fd);
+
+    // Xử lý thông điệp CONTROL (không cần kiểm tra trạng thái đăng nhập)
+    if (strncmp(message, "CONTROL", 7) == 0) {
+        // Nếu là lệnh LOGIN, xử lý đăng nhập và gán client_fd với userid
+        if (strncmp(message + 8, "LOGIN", 5) == 0) {
+            char username[50], password[50];
+            sscanf(message + 14, "%s %s", username, password); // Bỏ qua "CONTROL LOGIN "
+            handle_login(client_fd, username, password); // Xử lý đăng nhập
+        } else {
+            handle_control_message(client_fd,userid, message + 8); // Các lệnh CONTROL khác
+        }
+        return;
+    }
+    
+    
+    // Kiểm tra xem client_fd có được gắn userid hay chưa (đã đăng nhập hay chưa)
+    if (userid == -1) {
+        // Nếu chưa đăng nhập, từ chối xử lý các loại thông điệp khác
+        send_data(client_fd, "NOT_LOGGED_IN");
+        log_error("Unauthorized access attempt by client_fd %d", client_fd);
+        return;
+    }
+
+    // Xử lý các thông điệp khác
+    if (strncmp(message, "DATA", 4) == 0) {
+        handle_data_message(client_fd, userid, message + 5);  // Gọi đến handler dữ liệu
+    } else if (strncmp(message, "CHAT", 4) == 0) {
+        handle_chat_message(client_fd, userid, message + 5);  // Gọi đến handler chat
+    } else {
+        log_error("Unknown message type from userid %d: %s", userid, message);
+    }
+}
+
 
 // Gửi dữ liệu tới client
 int send_data(int client_fd, const char* data) {

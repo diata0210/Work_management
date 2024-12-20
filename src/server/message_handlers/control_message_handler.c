@@ -10,8 +10,9 @@ extern sqlite3 *db;
 
 // Hàm xử lý đăng nhập
 void handle_login(int client_fd, const char* username, const char* password) {
+    printf("%s %s",username, password);
     int rc = login_user(db, username, password);
-    if (rc == SQLITE_OK) {
+    if (rc != -1 && rc != 0) {
         send_data(client_fd, "LOGIN_SUCCESS");
         log_info("User %s logged in successfully", username);
     } else {
@@ -45,6 +46,7 @@ void handle_create_project(int client_fd, const char* project_name, const char* 
     }
 }
 
+
 // Mời thành viên vào dự án
 void handle_add_member(int client_fd, int project_id, int user_id, const char *role) {
     if (add_member_to_project(db, project_id, user_id, role) == SQLITE_OK) {
@@ -56,7 +58,31 @@ void handle_add_member(int client_fd, int project_id, int user_id, const char *r
     }
 }
 
-void handle_control_message(int client_fd, const char* message) {
+void handle_get_projects(int client_fd, int user_id) {
+    ProjectArray projects = get_projects_by_user(db, user_id);
+
+    if (projects.count == 0) {
+        send_data(client_fd, "NO_PROJECTS");
+        log_info("User %d has no projects", user_id);
+        return;
+    }
+
+    char response[1024];
+    snprintf(response, sizeof(response), "PROJECT_LIST_COUNT %d\n", projects.count);
+    send_data(client_fd, response);
+
+    for (int i = 0; i < projects.count; i++) {
+        snprintf(response, sizeof(response), "PROJECT_ID: %d, NAME: %s\n",
+                 projects.projects[i].project_id, projects.projects[i].name);
+        send_data(client_fd, response);
+    }
+
+    free(projects.projects); // Giải phóng bộ nhớ
+    log_info("Sent project list to user %d", user_id);
+}
+
+
+void handle_control_message(int client_fd,int userid, const char* message) {
     char command[20];
     sscanf(message, "%s", command);
 
@@ -68,7 +94,12 @@ void handle_control_message(int client_fd, const char* message) {
         char username[50], password[50];
         sscanf(message + 9, "%s %s", username, password); // Bỏ qua "REGISTER "
         handle_register(client_fd, username, password);
-    } else if (strcmp(command, "CREATE_PROJECT") == 0) {
+    } else if (strcmp(command, "") == 0) {
+        char username[50], password[50];
+        sscanf(message + 9, "%s %s", username, password); // Bỏ qua "REGISTER "
+        handle_register(client_fd, username, password);
+    }
+     else if (strcmp(command, "CREATE_PROJECT") == 0) {
         char project_name[100], description[255];
         int created_by;
         sscanf(message + 15, "%s %s %d", project_name, description, &created_by); // Bỏ qua "CREATE_PROJECT "
