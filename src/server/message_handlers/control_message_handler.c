@@ -94,10 +94,9 @@ void handle_control_message(int client_fd,int userid, const char* message) {
         char username[50], password[50];
         sscanf(message + 9, "%s %s", username, password); // Bỏ qua "REGISTER "
         handle_register(client_fd, username, password);
-    } else if (strcmp(command, "") == 0) {
-        char username[50], password[50];
-        sscanf(message + 9, "%s %s", username, password); // Bỏ qua "REGISTER "
-        handle_register(client_fd, username, password);
+    } else if (strcmp(command, "GET_PROJECT") == 0) {
+        sscanf(message + 12, "%s %s", userid); 
+        handle_get_projects(client_fd,userid );
     }
      else if (strcmp(command, "CREATE_PROJECT") == 0) {
         char project_name[100], description[255];

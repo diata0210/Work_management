@@ -8,6 +8,58 @@
 
 extern sqlite3 *db;
 
+void handle_create_task(int client_fd, sqlite3 *db, const char *task_name, const char *description, int project_id, int assignee_id) {
+    int rc = insert_task(db, task_name, description, project_id, assignee_id);
+    if (rc == SQLITE_OK) {
+        send_data(client_fd, "TASK_CREATED");
+        log_info("Task '%s' created successfully for project %d and assigned to user %d", task_name, project_id, assignee_id);
+    } else {
+        send_data(client_fd, "TASK_CREATION_FAILED");
+        log_error("Failed to create task '%s' for project %d", task_name, project_id);
+    }
+}
+
+// Hàm xử lý yêu cầu lấy danh sách task
+void handle_get_tasks(int client_fd, sqlite3 *db, int project_id) {
+    char response[1024];
+
+    // Lấy danh sách task từ cơ sở dữ liệu
+    snprintf(response, sizeof(response), "TASKS_FOR_PROJECT %d:\n", project_id);
+    send_data(client_fd, response);
+
+    char sql[256];
+    sqlite3_stmt *stmt;
+
+    snprintf(sql, sizeof(sql), "SELECT task_id, name, description, status, assignee_id, due_date FROM tasks WHERE project_id = %d;", project_id);
+
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+    if (rc != SQLITE_OK) {
+        snprintf(response, sizeof(response), "Failed to fetch tasks: %s\n", sqlite3_errmsg(db));
+        send_data(client_fd, response);
+        log_error("%s", response);
+        return;
+    }
+
+    // Gửi từng task về client
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        int task_id = sqlite3_column_int(stmt, 0);
+        const char *name = (const char *)sqlite3_column_text(stmt, 1);
+        const char *description = (const char *)sqlite3_column_text(stmt, 2);
+        const char *status = (const char *)sqlite3_column_text(stmt, 3);
+        int assignee_id = sqlite3_column_int(stmt, 4);
+        const char *due_date = (const char *)sqlite3_column_text(stmt, 5);
+
+        snprintf(response, sizeof(response), 
+                 "Task ID: %d, Name: %s, Description: %s, Status: %s, Assignee ID: %d, Due Date: %s\n", 
+                 task_id, name, description, status, assignee_id, due_date ? due_date : "N/A");
+        send_data(client_fd, response);
+    }
+
+    sqlite3_finalize(stmt);
+    log_info("Sent task list for project %d to client_fd %d", project_id, client_fd);
+}
+
+
 void handle_task_update(int client_fd, int task_id, const char* status) {
     if (update_task_status(db, task_id, status) == SQLITE_OK) {
         send_data(client_fd, "TASK_STATUS_UPDATED");
