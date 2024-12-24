@@ -130,3 +130,57 @@ void free_project_array(ProjectArray *project_array) {
         project_array->count = 0;
     }
 }
+
+
+
+
+UserArray get_project_members(sqlite3 *db, int project_id) {
+    const char *sql = "SELECT user_id FROM project_members WHERE project_id = ?";
+    sqlite3_stmt *stmt;
+    UserArray result = {NULL, 0};
+
+    int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, 0);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to fetch members: %s\n", sqlite3_errmsg(db));
+        return result;
+    }
+
+    sqlite3_bind_int(stmt, 1, project_id);
+
+    // Count the number of members
+    int member_count = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        member_count++;
+    }
+
+    // Reset the query
+    sqlite3_reset(stmt);
+
+    // Allocate memory for user IDs
+    result.user_ids = (int *)malloc(member_count * sizeof(int));
+    if (result.user_ids == NULL) {
+        fprintf(stderr, "Memory allocation failed\n");
+        sqlite3_finalize(stmt);
+        return result;
+    }
+    result.count = member_count;
+
+    // Fetch the user IDs
+    int index = 0;
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        result.user_ids[index] = sqlite3_column_int(stmt, 0);
+        index++;
+    }
+
+    sqlite3_finalize(stmt);
+    return result;
+}
+
+void free_user_array(UserArray *user_array) {
+    if (user_array->user_ids != NULL) {
+        free(user_array->user_ids);
+        user_array->user_ids = NULL;
+        user_array->count = 0;
+    }
+}
+

@@ -7,11 +7,11 @@
 #include "socket_handler.h"
 #include "control_message_handler.h"
 #include "data_message_handler.h"
-#include "chat_message_handler.h"
 #include "video_message_handler.h"
 #include "config.h"
 #include "logger.h"
 #include "user_dao.h"
+#include "project_dao.h"
 #define BUFFER_SIZE MAX_BUFFER
 
 #include <pthread.h> // Thêm để sử dụng mutex
@@ -20,20 +20,131 @@
 
 extern sqlite3 *db;
 
-typedef struct {
-    int userid;
-    int client_fd;
-} UserSocket;
 
 UserSocket user_sockets[MAX_USERS];
 pthread_mutex_t user_sockets_mutex = PTHREAD_MUTEX_INITIALIZER;
+static void print_all_user_sockets() {
+    printf("UserSocket Information:\n");
+    for (int i = 0; i < MAX_USERS; i++) {
+        if (user_sockets[i].userid != -1) {
+            printf("Index: %d, UserID: %d, ClientFD: %d\n", i, user_sockets[i].userid, user_sockets[i].client_fd);
+        }
+    }
+}
 
+#include "socket_handler.h"
+#include "logger.h"
+
+void* handle_client_thread(void* arg) {
+    int client_fd = *(int*)arg;
+    free(arg);  // Giải phóng bộ nhớ cấp phát động
+
+    char buffer[MAX_BUFFER];
+    int bytes_received;
+
+    log_info("Started thread for client_fd=%d", client_fd);
+
+    while ((bytes_received = receive_message(client_fd, buffer, MAX_BUFFER)) > 0) {
+        handle_client_message(client_fd, buffer);
+    }
+
+    if (bytes_received == 0) {
+        log_info("Client disconnected: client_fd=%d", client_fd);
+    } else if (bytes_received < 0) {
+        log_error("Error receiving data from client_fd=%d", client_fd);
+    }
+
+    close_connection(client_fd);
+    log_info("Finished thread for client_fd=%d", client_fd);
+    return NULL;
+}
+
+void handle_chat_message(int client_fd, int sender_user_id, const char *message) {
+    int project_id;
+    char content[2048];
+
+    // Parse "CHAT project_id content"
+    if (sscanf(message, "%d %[^\n]", &project_id, content) < 2) {
+        send_data(client_fd, "INVALID_CHAT_MESSAGE_FORMAT");
+        return;
+    }
+    print_all_user_sockets();
+    // Lấy danh sách thành viên trong dự án
+    UserArray members = get_project_members(db, project_id);
+    if (members.user_ids == NULL) {
+        send_data(client_fd, "FAILED_TO_FETCH_PROJECT_MEMBERS");
+        return;
+    }
+
+    printf("Project ID: %d, Members count: %d\n", project_id, members.count);
+
+    // Gửi tin nhắn đến tất cả các thành viên trừ người gửi
+    for (int i = 0; i < members.count; i++) {
+
+        if (members.user_ids[i] != sender_user_id) {
+            int member_fd = find_client_fd_by_userid(members.user_ids[i]);
+            printf("User ID: %d, Client FD: %d\n", members.user_ids[i], member_fd);
+            if (member_fd != -1) {
+                char full_message[2048];
+                snprintf(full_message, sizeof(full_message), "SERVER CHAT %d %s", project_id, content);
+                printf("Sending to client_fd %d: %s\n", member_fd, full_message);
+                send_data(member_fd, full_message);
+            }
+        }
+    }
+
+    free_user_array(&members);
+}
 // Khởi tạo mảng user_sockets
 void initialize_user_sockets() {
+    pthread_mutex_lock(&user_sockets_mutex);
     for (int i = 0; i < MAX_USERS; i++) {
         user_sockets[i].userid = -1;
         user_sockets[i].client_fd = -1;
     }
+    pthread_mutex_unlock(&user_sockets_mutex);
+}
+
+// Thêm user vào danh sách
+int add_user_socket(int userid, int client_fd) {
+    pthread_mutex_lock(&user_sockets_mutex);
+    for (int i = 0; i < MAX_USERS; i++) {
+        if (user_sockets[i].userid == -1) {
+            user_sockets[i].userid = userid;
+            user_sockets[i].client_fd = client_fd;
+            pthread_mutex_unlock(&user_sockets_mutex);
+            return 0;  // Thành công
+        }
+    }
+    pthread_mutex_unlock(&user_sockets_mutex);
+    return -1;  // Danh sách đầy
+}
+
+// Xóa user khỏi danh sách
+void remove_user_socket(int client_fd) {
+    pthread_mutex_lock(&user_sockets_mutex);
+    for (int i = 0; i < MAX_USERS; i++) {
+        if (user_sockets[i].client_fd == client_fd) {
+            user_sockets[i].userid = -1;
+            user_sockets[i].client_fd = -1;
+            break;
+        }
+    }
+    pthread_mutex_unlock(&user_sockets_mutex);
+}
+
+// Tìm client_fd theo userid
+int find_client_fd_by_userid(int userid) {
+    pthread_mutex_lock(&user_sockets_mutex);
+    for (int i = 0; i < MAX_USERS; i++) {
+        if (user_sockets[i].userid == userid) {
+            int client_fd = user_sockets[i].client_fd;
+            pthread_mutex_unlock(&user_sockets_mutex);
+            return client_fd;
+        }
+    }
+    pthread_mutex_unlock(&user_sockets_mutex);
+    return -1;
 }
 
 
@@ -100,42 +211,7 @@ int find_userid_by_client_fd(int client_fd) {
 }
 
 
-int find_client_fd_by_userid(int userid) {
-    pthread_mutex_lock(&user_sockets_mutex);
-    for (int i = 0; i < MAX_USERS; i++) {
-        if (user_sockets[i].userid == userid) {
-            int client_fd = user_sockets[i].client_fd;
-            pthread_mutex_unlock(&user_sockets_mutex);
-            return client_fd;
-        }
-    }
-    pthread_mutex_unlock(&user_sockets_mutex);
-    return -1;  // Không tìm thấy
-}
-int add_user_socket(int userid, int client_fd) {
-    pthread_mutex_lock(&user_sockets_mutex);
-    for (int i = 0; i < MAX_USERS; i++) {
-        if (user_sockets[i].userid == -1) {  // Vị trí trống
-            user_sockets[i].userid = userid;
-            user_sockets[i].client_fd = client_fd;
-            pthread_mutex_unlock(&user_sockets_mutex);
-            return 0;  // Thành công
-        }
-    }
-    pthread_mutex_unlock(&user_sockets_mutex);
-    return -1;  // Mảng đầy
-}
-void remove_user_socket(int client_fd) {
-    pthread_mutex_lock(&user_sockets_mutex);
-    for (int i = 0; i < MAX_USERS; i++) {
-        if (user_sockets[i].client_fd == client_fd) {
-            user_sockets[i].userid = -1;
-            user_sockets[i].client_fd = -1;
-            break;
-        }
-    }
-    pthread_mutex_unlock(&user_sockets_mutex);
-}
+
 
 void handle_login(int client_fd, const char* username, const char* password) {
     int userid = login_user(db, username, password);
@@ -160,7 +236,12 @@ void handle_login(int client_fd, const char* username, const char* password) {
 void handle_client_message(int client_fd, const char* message) {
     // Tìm userid dựa trên client_fd
     int userid = find_userid_by_client_fd(client_fd);
-    printf("%d", userid);
+    if (userid <1){
+        printf("Not found id");
+    }else{
+        printf("%d", userid);
+    }
+    
 
     // Xử lý thông điệp CONTROL (không cần kiểm tra trạng thái đăng nhập)
     if (strncmp(message, "CONTROL", 7) == 0) {
@@ -186,8 +267,12 @@ void handle_client_message(int client_fd, const char* message) {
 
     // Xử lý các thông điệp khác
     if (strncmp(message, "DATA", 4) == 0) {
+        printf("%s", message);
+        fflush(stdout);
         handle_data_message(client_fd, userid, message + 5);  // Gọi đến handler dữ liệu
     } else if (strncmp(message, "CHAT", 4) == 0) {
+        
+        printf("Chat handle");
         handle_chat_message(client_fd, userid, message + 5);  // Gọi đến handler chat
     } else {
         log_error("Unknown message type from userid %d: %s", userid, message);
@@ -226,22 +311,11 @@ void close_connection(int client_fd) {
     log_info("Closed connection with client");
 }
 
-// Hàm xử lý kết nối client trong một vòng lặp cho server
-void handle_client_connection(int server_fd) {
-    while (1) {
-        int client_fd = accept_client_connection(server_fd);
-        if (client_fd < 0) {
-            log_error("Failed to accept client connection");
-            continue;
-        }
 
-        // Vòng lặp xử lý thông điệp từ client
-        char buffer[BUFFER_SIZE];
-        int bytes_received;
-        while ((bytes_received = receive_data(client_fd, buffer, BUFFER_SIZE)) > 0) {
-            handle_client_message(client_fd, buffer);  // Phân loại và xử lý thông điệp
-        }
 
-        close_connection(client_fd);  // Đóng kết nối sau khi client ngắt kết nối
-    }
-}
+
+
+
+
+
+

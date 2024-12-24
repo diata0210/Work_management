@@ -17,6 +17,9 @@ SRCS = $(SRC_DIR)/main.c \
        $(NETWORK_DIR)/socket.c \
        $(UI_DIR)/login_window.c \
        $(UI_DIR)/main_window.c \
+	   $(UI_DIR)/chat_window.c \
+	   $(UI_DIR)/task_window.c \
+	   $(UI_DIR)/project_window.c \
        $(MESSAGE_DIR)/chat_message_handler.c \
        $(MESSAGE_DIR)/control_message_handler.c \
        $(MESSAGE_DIR)/data_message_handler.c \

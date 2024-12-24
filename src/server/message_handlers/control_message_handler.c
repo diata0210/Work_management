@@ -86,9 +86,39 @@ void handle_get_projects(int client_fd, int user_id) {
     log_info("Sent project list to user %d", user_id);
 }
 
+
+void handle_get_members(int client_fd, int project_id) {
+    UserArray members = get_project_members(db, project_id);
+
+    if (members.count == 0) {
+        send_data(client_fd, "NO_MEMBERS");
+        log_info("Project %d has no members", project_id);
+        return;
+    }
+
+    char response[4096]; // Bộ đệm phản hồi
+    response[0] = '\0';  // Đảm bảo chuỗi bắt đầu rỗng
+
+    for (int i = 0; i < members.count; i++) {
+        char member_line[128];
+        snprintf(member_line, sizeof(member_line), "USER_ID: %d\n", members.user_ids[i]);
+        strncat(response, member_line, sizeof(response) - strlen(response) - 1);
+    }
+
+    send_data(client_fd, response); // Gửi dữ liệu
+    free_user_array(&members);      // Giải phóng bộ nhớ
+    log_info("Sent member list for project %d", project_id);
+}
+
+
 void handle_control_message(int client_fd,int userid, const char* message) {
     char command[20];
-    sscanf(message, "%s", command);
+    if (sscanf(message, "%49s", command) != 1) {
+        log_error("Failed to parse action from message: %s", message);
+        send_data(client_fd, "INVALID_MESSAGE_FORMAT");
+        return;
+    }
+    
 
     if (strcmp(command, "LOGIN") == 0) {
         char username[50], password[50];
@@ -98,18 +128,19 @@ void handle_control_message(int client_fd,int userid, const char* message) {
         char username[50], password[50];
         sscanf(message + 9, "%s %s", username, password); // Bỏ qua "REGISTER "
         handle_register(client_fd, username, password);
-    } else if (strcmp(command, "GET_PROJECT") == 0) {
-        
-        
+    } else if (strcmp(command, "GET_PROJECT") == 0) {   
         handle_get_projects(client_fd,userid );
-    }
-     else if (strcmp(command, "CREATE_PROJECT") == 0) {
+    } else if (strcmp(command, "CREATE_PROJECT") == 0) {
         char project_name[100], description[255];
         int created_by= find_userid_by_client_fd(client_fd);
         sscanf(message + 15, "%s %s", project_name, description);
         
          // Bỏ qua "CREATE_PROJECT "
         handle_create_project(client_fd, project_name, description, created_by);
+    } else if (strcmp(command, "GET_MEMBERS") == 0) {
+        int project_id;
+        sscanf(message + 11, "%d", &project_id); // Bỏ qua "GET_MEMBERS "
+        handle_get_members(client_fd, project_id);
     } else if (strcmp(command, "ADD_MEMBER") == 0) {
         int project_id, user_id;
         char role[20];

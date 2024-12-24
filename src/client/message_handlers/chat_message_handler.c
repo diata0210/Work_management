@@ -2,8 +2,29 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/socket.h>
+#include <stdbool.h>
 #include "chat_message_handler.h"
 #include "../network/socket.h"  // Giả sử bạn có một hàm send_chat_to_member()
+
+
+
+
+bool send_project_chat(int client_fd,int project_id, const char* content) {
+    char chat_message[512];
+    char response_buffer[1024];
+    memset(response_buffer, 0, 1024);
+    // Tạo thông điệp chat theo định dạng: CHAT <project_id> <content>
+    snprintf(chat_message, sizeof(chat_message), "CHAT %d %s", project_id, content);
+    printf("%s",chat_message);
+    // Gửi thông điệp chat tới thành viên
+    if (send_request(chat_message, response_buffer)) {
+        if (strcmp(response_buffer,"CHAT_SENT") == 0){
+            return true;
+        }
+    }
+    return false;
+}
+
 
 // Hàm gửi tin nhắn chat tới một thành viên trong nhóm
 void send_chat_to_member(int client_fd, int member_fd, const char* message) {
@@ -21,35 +42,16 @@ void send_chat_to_member(int client_fd, int member_fd, const char* message) {
 }
 
 // Hàm gửi tin nhắn chat tới tất cả các thành viên trong nhóm
-void send_chat_to_group(int client_fd, int* member_fds, int member_count, const char* message) {
-    for (int i = 0; i < member_count; i++) {
-        if (member_fds[i] != client_fd) {  // Không gửi lại cho chính người gửi
-            send_chat_to_member(client_fd, member_fds[i], message);
-        }
-    }
-}
+// void send_chat_to_group(int client_fd, int* member_fds, int member_count, const char* message) {
+//     for (int i = 0; i < member_count; i++) {
+//         if (member_fds[i] != client_fd) {  // Không gửi lại cho chính người gửi
+//             send_chat_to_member(client_fd, member_fds[i], message);
+//         }
+//     }
+// }
 
 // Hàm xử lý thông điệp chat từ server (có thể là tin nhắn chat hoặc các hành động khác)
-void handle_chat_message(int client_fd, const char* message) {
-    char command[20];
-    int member_count = 0;
-    int* member_fds = NULL;
 
-    // Phân tích thông điệp từ server để tìm lệnh hành động
-    sscanf(message, "%s", command);
-
-    if (strcmp(command, "CHAT") == 0) {
-        int sender_fd;
-        char chat_content[256];
-        sscanf(message + 5, "%d %[^\n]", &sender_fd, chat_content);  // Bỏ qua "CHAT "
-
-        // Gửi tin nhắn chat tới tất cả các thành viên trong nhóm trừ sender
-        // Ví dụ: member_fds là danh sách các file descriptor của thành viên trong nhóm
-        send_chat_to_group(client_fd, member_fds, member_count, chat_content);
-    } else {
-        log_error("Unknown chat message: %s", message);
-    }
-}
 
 // Hàm gửi tin nhắn chat từ client tới server
 void send_chat_message(int client_fd, const char* message) {

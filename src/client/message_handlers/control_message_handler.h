@@ -14,11 +14,13 @@ void send_register(int client_fd, const char* username, const char* password);
 bool send_get_projects_request(char *response_buffer, int buffer_size);
 // Hàm gửi thông điệp tạo dự án tới server
 bool send_create_project( const char* project_name, const char* description) ;
+bool send_get_members_request(int project_id, char *response, size_t response_size);
+bool send_add_member_request(int project_id, int user_id, const char *role) ;
 
 // Hàm gửi thông điệp mời thành viên vào dự án
-void send_add_member(int client_fd, int project_id, int user_id, const char *role);
+// void send_add_member(int client_fd, int project_id, int user_id, const char *role);
 
 // Hàm xử lý thông điệp control từ server
-void handle_control_message(int client_fd, const char* message);
+// void handle_control_message(int client_fd, const char* message);
 
 #endif // CONTROL_MESSAGE_HANDLER_H

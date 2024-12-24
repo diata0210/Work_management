@@ -10,12 +10,22 @@ typedef struct {
     char description[512];
 } Project;
 
+
 // Cấu trúc mảng Project
 typedef struct {
     Project *projects;
     int count;
 } ProjectArray;
 
+
+typedef struct {
+    int *user_ids;
+    int count;
+} UserArray;
+
+
+UserArray get_project_members(sqlite3 *db, int project_id);
+void free_user_array(UserArray *user_array);
 // Các hàm DAO cho bảng Project
 int insert_project(sqlite3 *db, const char *name, const char *description, int created_by);
 int add_member_to_project(sqlite3 *db, int project_id, int user_id, const char *role);

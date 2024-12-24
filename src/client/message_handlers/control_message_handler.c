@@ -48,6 +48,8 @@ bool send_get_projects_request(char *response_buffer, int buffer_size) {
     fprintf(stderr, "Failed to send GET_PROJECT request.\n");
     return false;
 }
+
+
 // Hàm gửi thông điệp tạo dự án tới server
 bool send_create_project( const char* project_name, const char* description) {
     char create_project_message[512];
@@ -66,48 +68,78 @@ bool send_create_project( const char* project_name, const char* description) {
     return false;
     
 }
+bool send_get_members_request(int project_id, char *response, size_t response_size) {
+    char request[256];
+    snprintf(request, sizeof(request), "CONTROL GET_MEMBERS %d", project_id);
+    memset(response, 0, response_size);
+
+    if (send_request(request, response)) {
+        return true;
+    }
+
+    fprintf(stderr, "Failed to send GET_MEMBERS request for project ID: %d\n", project_id);
+    return false;
+}
+
+
+bool send_add_member_request(int project_id, int user_id, const char *role) {
+    char request[256];
+    char response_buffer[1024];
+    snprintf(request, sizeof(request), "CONTROL ADD_MEMBER %d %d %s", project_id, user_id, role);
+    memset(response_buffer, 0, sizeof(response_buffer));
+
+    if (send_request(request, response_buffer)) {
+        if (strcmp(response_buffer, "MEMBER_ADDED") == 0) {
+            return true;
+        }
+    }
+
+    fprintf(stderr, "Failed to send ADD_MEMBER request.\n");
+    return false;
+}
+
 
 // Hàm gửi thông điệp mời thành viên vào dự án
-void send_add_member(int client_fd, int project_id, int user_id, const char *role) {
-    char add_member_message[512];
+// void send_add_member(int client_fd, int project_id, int user_id, const char *role) {
+//     char add_member_message[512];
 
-    // Tạo thông điệp mời thành viên vào dự án theo định dạng: ADD_MEMBER <project_id> <user_id> <role>
-    snprintf(add_member_message, sizeof(add_member_message), "CONTROL ADD_MEMBER %d %d %s", project_id, user_id, role);
+//     // Tạo thông điệp mời thành viên vào dự án theo định dạng: ADD_MEMBER <project_id> <user_id> <role>
+//     snprintf(add_member_message, sizeof(add_member_message), "CONTROL ADD_MEMBER %d %d %s", project_id, user_id, role);
 
-    // Gửi thông điệp mời thành viên tới server
-    if (send(client_fd, add_member_message, strlen(add_member_message), 0) == -1) {
-        perror("send_add_member() failed");
-    } else {
-        printf("Add member message sent to server: %s\n", add_member_message);
-    }
-}
+//     // Gửi thông điệp mời thành viên tới server
+//     if (send(client_fd, add_member_message, strlen(add_member_message), 0) == -1) {
+//         perror("send_add_member() failed");
+//     } else {
+//         printf("Add member message sent to server: %s\n", add_member_message);
+//     }
+// }
 
 // Hàm xử lý thông điệp control từ server
-void handle_control_message(int client_fd, const char* message) {
-    char command[20];
-    sscanf(message, "%s", command);
+// void handle_control_message(int client_fd, const char* message) {
+//     char command[20];
+//     sscanf(message, "%s", command);
 
-    if (strcmp(command, "LOGIN") == 0) {
-        char username[50], password[50];
-        sscanf(message + 6, "%s %s", username, password); // Bỏ qua "LOGIN "
-        send_login(client_fd, username, password);
-    } else if (strcmp(command, "REGISTER") == 0) {
-        char username[50], password[50];
-        sscanf(message + 9, "%s %s", username, password); // Bỏ qua "REGISTER "
-        send_register(client_fd, username, password);
-    }
-    //  else if (strcmp(command, "CREATE_PROJECT") == 0) {
-    //     char project_name[100], description[255];
-    //     int created_by;
-    //     sscanf(message + 15, "%s %s %d", project_name, description,h); // Bỏ qua "CREATE_PROJECT "
-    //     send_create_project(client_fd, project_name, description, created_by);
-    // } 
-    else if (strcmp(command, "ADD_MEMBER") == 0) {
-        int project_id, user_id;
-        char role[20];
-        sscanf(message + 11, "%d %d %s", &project_id, &user_id, role); // Bỏ qua "ADD_MEMBER "
-        send_add_member(client_fd, project_id, user_id, role);
-    } else {
-        log_error("Unknown control message: %s", message);
-    }
-}
+//     if (strcmp(command, "LOGIN") == 0) {
+//         char username[50], password[50];
+//         sscanf(message + 6, "%s %s", username, password); // Bỏ qua "LOGIN "
+//         send_login(client_fd, username, password);
+//     } else if (strcmp(command, "REGISTER") == 0) {
+//         char username[50], password[50];
+//         sscanf(message + 9, "%s %s", username, password); // Bỏ qua "REGISTER "
+//         send_register(client_fd, username, password);
+//     }
+//     //  else if (strcmp(command, "CREATE_PROJECT") == 0) {
+//     //     char project_name[100], description[255];
+//     //     int created_by;
+//     //     sscanf(message + 15, "%s %s %d", project_name, description,h); // Bỏ qua "CREATE_PROJECT "
+//     //     send_create_project(client_fd, project_name, description, created_by);
+//     // } 
+//     else if (strcmp(command, "ADD_MEMBER") == 0) {
+//         int project_id, user_id;
+//         char role[20];
+//         sscanf(message + 11, "%d %d %s", &project_id, &user_id, role); // Bỏ qua "ADD_MEMBER "
+//         send_add_member(client_fd, project_id, user_id, role);
+//     } else {
+//         log_error("Unknown control message: %s", message);
+//     }
+// }

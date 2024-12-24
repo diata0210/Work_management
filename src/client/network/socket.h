@@ -1,12 +1,17 @@
 #ifndef SOCKET_H
 #define SOCKET_H
+
 #include <stdbool.h>
 
-// int connect_to_server(const char *server_ip, int port);
-// int send_message(int client_fd, const char *message);
-// int receive_message(int client_fd, char *buffer, int buffer_size);
-bool initialize_socket();
+
+void initialize_socket_mutex();
+void destroy_socket_mutex();
+bool initialize_socket(const char *server_ip, int port);
 void close_socket();
 bool send_request(const char *request, char *response);
 bool receive_response(char *response, int max_length);
-#endif  // SOCKET_H
+bool receive_data_async(void (*callback)(const char *data)) ;
+void *start_receive_loop(void *callback) ;
+bool send_request_no_response(const char *request) ;
+
+#endif // SOCKET_H

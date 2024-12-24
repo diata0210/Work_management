@@ -4,7 +4,16 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <pthread.h>
+#define MAX_USERS 100
 
+typedef struct {
+    int userid;
+    int client_fd;
+} UserSocket;
+
+extern UserSocket user_sockets[MAX_USERS];
+extern pthread_mutex_t user_sockets_mutex;
 // Khởi tạo server socket
 int setup_server_socket(int port);
 
@@ -16,10 +25,10 @@ int send_data(int client_fd, const char* data);
 
 // Nhận dữ liệu từ client
 int receive_data(int client_fd, char* buffer, int buffer_size);
-
+void* handle_client_thread(void* arg) ;
 // Đóng kết nối với client
 void close_connection(int client_fd);
-
+void handle_chat_message(int client_fd, int sender_user_id, const char *message) ;
 // Hàm xử lý client
 void handle_client(int client_fd);
 

@@ -3,7 +3,7 @@
 
 #include "../network/socket.h"
 #include "../message_handlers/control_message_handler.h"
-
+#include "project_window.h"
 #define BUFFER_SIZE 4096
 
 GtkWidget *main_window;
