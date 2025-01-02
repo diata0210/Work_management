@@ -86,7 +86,7 @@ void handle_chat_message(int client_fd, int sender_user_id, const char *message)
             printf("User ID: %d, Client FD: %d\n", members.user_ids[i], member_fd);
             if (member_fd != -1) {
                 char full_message[2048];
-                snprintf(full_message, sizeof(full_message), "SERVER CHAT %d %s", project_id, content);
+                snprintf(full_message, sizeof(full_message), "User %d  %s", sender_user_id , content);
                 printf("Sending to client_fd %d: %s\n", member_fd, full_message);
                 send_data(member_fd, full_message);
             }
@@ -117,7 +117,7 @@ int add_user_socket(int userid, int client_fd) {
         }
     }
     pthread_mutex_unlock(&user_sockets_mutex);
-    return -1;  // Danh sách đầy
+    return -1;  // Danh sách đy
 }
 
 // Xóa user khỏi danh sách

@@ -311,7 +311,9 @@ bool load_tasks_from_server(int project_id, TaskList *task_list_data) {
 // //     gtk_widget_destroy(dialog);
 // // }
 void on_chat_button_clicked(GtkButton *button, gpointer user_data) {
-    int project_id = GPOINTER_TO_INT(user_data);
+    ProjectContext *context = (ProjectContext*)user_data;
+    int project_id = context->project_id;
+    
     GtkWidget *chat_window = create_chat_window(project_id);
     gtk_widget_show_all(chat_window);
 }

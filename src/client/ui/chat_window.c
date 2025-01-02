@@ -154,10 +154,65 @@ int client_socket;
 char buff[BUFF_SIZE];
 
 // Hàm xử lý nhận dữ liệu từ server
-void *receive_handler(void *arg) {
-    GtkTextView *chat_history = GTK_TEXT_VIEW(arg);
+// void *receive_handler(void *arg) {
+//     GtkTextView *chat_history = GTK_TEXT_VIEW(arg);
+//     GtkTextBuffer *buffer = gtk_text_view_get_buffer(chat_history);
+//     GtkTextIter end_iter;
+
+//     while (1) {
+//         char buff[BUFF_SIZE];
+//         if (!receive_response(buff, BUFF_SIZE)) {
+//             fprintf(stderr, "Error: Failed to receive data or connection closed. Exiting receive loop.\n");
+//             pthread_exit(NULL);
+//         }
+//         printf("Received: %s\n", buff);
+
+//         gtk_text_buffer_get_end_iter(buffer, &end_iter);
+//         gtk_text_buffer_insert(buffer, &end_iter, buff, -1);
+//         gtk_text_buffer_insert(buffer, &end_iter, "\n", -1);
+//     }
+
+//     return NULL;
+// }
+
+gboolean update_chat_history_from_thread(gpointer user_data) {
+    if (!user_data) return FALSE; // Kiểm tra NULL
+
+    // Tách dữ liệu và `GtkTextView`
+    struct {
+        GtkTextView *chat_history;
+        char *message;
+    } *data = user_data;
+
+    GtkTextView *chat_history = data->chat_history;
+    char *message = data->message;
+
+    if (!chat_history || !message) {
+        g_free(data->message);
+        g_free(data);
+        return FALSE;
+    }
+
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(chat_history);
     GtkTextIter end_iter;
+
+    // Cập nhật nội dung vào `GtkTextView`
+    gtk_text_buffer_get_end_iter(buffer, &end_iter);
+    gtk_text_buffer_insert(buffer, &end_iter, "Server: ", -1); // Thêm tiền tố 'Server:'
+    gtk_text_buffer_insert(buffer, &end_iter, message, -1);
+    gtk_text_buffer_insert(buffer, &end_iter, "\n", -1);
+
+    printf("Message added to chat history: %s\n", message);
+
+    // Giải phóng bộ nhớ
+    g_free(data->message);
+    g_free(data);
+
+    return FALSE; // Chỉ chạy một lần
+}
+
+void *receive_handler(void *arg) {
+    GtkTextView *chat_history = GTK_TEXT_VIEW(arg);
 
     while (1) {
         char buff[BUFF_SIZE];
@@ -165,15 +220,25 @@ void *receive_handler(void *arg) {
             fprintf(stderr, "Error: Failed to receive data or connection closed. Exiting receive loop.\n");
             pthread_exit(NULL);
         }
+
         printf("Received: %s\n", buff);
 
-        gtk_text_buffer_get_end_iter(buffer, &end_iter);
-        gtk_text_buffer_insert(buffer, &end_iter, buff, -1);
-        gtk_text_buffer_insert(buffer, &end_iter, "\n", -1);
+        // Tạo một cấu trúc để truyền vào `g_idle_add`
+        struct {
+            GtkTextView *chat_history;
+            char *message;
+        } *data = g_new0(typeof(*data), 1);
+
+        data->chat_history = chat_history;
+        data->message = g_strdup(buff);
+
+        // Sử dụng `g_idle_add` để cập nhật giao diện trong luồng chính
+        g_idle_add(update_chat_history_from_thread, data);
     }
 
     return NULL;
 }
+
 
 // Hàm gửi tin nhắn
 void send_message(const char *message, int project_id) {
@@ -192,17 +257,33 @@ void on_send_message_clicked(GtkButton *button, gpointer user_data) {
     GtkEntry *entry = GTK_ENTRY(user_data);
     const char *message = gtk_entry_get_text(entry);
 
+    // Kiểm tra xem tin nhắn có trống không
     if (message == NULL || strlen(message) == 0) {
         printf("Error: Message is empty.\n");
         return;
     }
 
-    // Lấy project_id từ dữ liệu gắn vào cửa sổ chính
+    // Lấy cửa sổ chính để truy xuất project_id
     GtkWidget *window = gtk_widget_get_toplevel(GTK_WIDGET(entry));
     int project_id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(window), "project_id"));
 
+    // Gửi tin nhắn tới server
     send_message(message, project_id);
-    gtk_entry_set_text(entry, "");
+
+    // Hiển thị tin nhắn gửi đi trong khung lịch sử chat
+    GtkTextView *chat_history = GTK_TEXT_VIEW(g_object_get_data(G_OBJECT(window), "chat_history"));
+    if (chat_history) {
+        GtkTextBuffer *buffer = gtk_text_view_get_buffer(chat_history);
+        GtkTextIter end_iter;
+
+        gtk_text_buffer_get_end_iter(buffer, &end_iter);
+        gtk_text_buffer_insert(buffer, &end_iter, "You: ", -1); // Thêm tiền tố 'You:'
+        gtk_text_buffer_insert(buffer, &end_iter, message, -1);
+        gtk_text_buffer_insert(buffer, &end_iter, "\n", -1);
+    } else {
+        printf("Error: Chat history widget not found.\n");
+    }
+        gtk_entry_set_text(entry, "");
 }
 
 // Hàm tạo màn hình chat
@@ -235,6 +316,7 @@ GtkWidget *create_chat_window(int project_id) {
     // Tạo nút gửi tin nhắn
     GtkWidget *send_button = gtk_button_new_with_label("Send");
     gtk_box_pack_start(GTK_BOX(vbox), send_button, FALSE, FALSE, 0);
+    g_object_set_data(G_OBJECT(window), "chat_history", chat_history);
 
     // Gắn callback cho nút gửi tin nhắn
     g_signal_connect(send_button, "clicked", G_CALLBACK(on_send_message_clicked), entry);
