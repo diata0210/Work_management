@@ -92,6 +92,7 @@ void handle_get_attachments(int client_fd, int task_id) {
                      attachments.attachments[i].uploaded_by);
             strncat(response, attachment_line, sizeof(response) - strlen(response) - 1);
         }
+        printf("response: %s", response);
     } else {
         strncat(response, "ATTACHMENTS: NONE\n", sizeof(response) - strlen(response) - 1);
     }

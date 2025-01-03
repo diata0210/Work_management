@@ -129,7 +129,7 @@ GtkWidget *create_attachment_view(int task_id) {
             // Tách thông tin file (giả định định dạng "FILE_ID: %d, FILE_NAME: %s")
             int file_id;
             char file_name[128];
-            if (sscanf(line, "FILE_ID: %d, FILE_NAME: %127s", &file_id, file_name) == 2) {
+            if (sscanf(line, "FILENAME: %127s", file_name) == 1) {
                 GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
 
                 // Tên file

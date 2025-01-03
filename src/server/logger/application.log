@@ -1498,3 +1498,57 @@ void printScope(Scope* scope, int indent);
 [2025-01-03 17:53:44] [INFO] Sent member list for project 14
 [2025-01-03 17:53:46] [INFO] Sent comments for task_id 1 to client_fd 5
 [2025-01-03 17:53:46] [INFO] Sent attachments for task_id 1 to client_fd 5
+[2025-01-03 18:02:01] [ERROR] Error binding socket
+[2025-01-03 18:02:01] [ERROR] Failed to set up server socket
+[2025-01-03 18:02:04] [INFO] Server is listening on port 8080
+[2025-01-03 18:02:04] [INFO] Server is running on port 8080...
+[2025-01-03 18:02:06] [INFO] Client connected with IP: 127.0.0.1 and Port: 48834
+[2025-01-03 18:02:06] [INFO] Started thread for client_fd=5
+[2025-01-03 18:02:15] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 18:02:15] [INFO] Sent project list to user 1
+[2025-01-03 18:02:16] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 18:02:16] [INFO] Sent member list for project 14
+[2025-01-03 18:02:17] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 18:02:17] [INFO] Sent attachments for task_id 1 to client_fd 5
+[2025-01-03 18:02:23] [INFO] Receiving file: /home/parallels/Desktop/Work-managment/Work_management/src/server/database/uploads/error.c
+[2025-01-03 18:02:23] [INFO] File transfer completed.
+[2025-01-03 18:02:23] [INFO] File error.c attached to task 1 successfully.
+[2025-01-03 18:02:23] [INFO] Sent attachments for task_id 1 to client_fd 5
+[2025-01-03 18:03:27] [ERROR] Error binding socket
+[2025-01-03 18:03:27] [ERROR] Failed to set up server socket
+[2025-01-03 18:03:30] [INFO] Server is listening on port 8081
+[2025-01-03 18:03:30] [INFO] Server is running on port 8081...
+[2025-01-03 18:03:32] [INFO] Client connected with IP: 127.0.0.1 and Port: 53388
+[2025-01-03 18:03:32] [INFO] Started thread for client_fd=5
+[2025-01-03 18:03:40] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 18:03:40] [INFO] Sent project list to user 1
+[2025-01-03 18:03:41] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 18:03:41] [INFO] Sent member list for project 14
+[2025-01-03 18:03:42] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 18:03:42] [INFO] Sent attachments for task_id 1 to client_fd 5
+[2025-01-03 18:06:16] [ERROR] Error binding socket
+[2025-01-03 18:06:16] [ERROR] Failed to set up server socket
+[2025-01-03 18:07:20] [INFO] Server is listening on port 8081
+[2025-01-03 18:07:20] [INFO] Server is running on port 8081...
+[2025-01-03 18:07:23] [INFO] Client connected with IP: 127.0.0.1 and Port: 40408
+[2025-01-03 18:07:23] [INFO] Started thread for client_fd=5
+[2025-01-03 18:07:34] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 18:07:34] [INFO] Sent project list to user 1
+[2025-01-03 18:07:35] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 18:07:35] [INFO] Sent member list for project 14
+[2025-01-03 18:07:36] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 18:07:36] [INFO] Sent attachments for task_id 1 to client_fd 5
+[2025-01-03 18:08:28] [INFO] Client disconnected: client_fd=5
+[2025-01-03 18:08:28] [INFO] Closed connection with client
+[2025-01-03 18:08:28] [INFO] Finished thread for client_fd=5
+[2025-01-03 18:08:31] [INFO] Client connected with IP: 127.0.0.1 and Port: 45134
+[2025-01-03 18:08:31] [INFO] Started thread for client_fd=6
+[2025-01-03 18:08:41] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 18:08:41] [INFO] Sent project list to user 1
+[2025-01-03 18:08:42] [INFO] Sent task list for project 14 to client_fd 6
+[2025-01-03 18:08:42] [INFO] Sent member list for project 14
+[2025-01-03 18:08:43] [INFO] Sent comments for task_id 1 to client_fd 6
+[2025-01-03 18:08:43] [INFO] Sent attachments for task_id 1 to client_fd 6
+[2025-01-03 18:08:56] [INFO] Client disconnected: client_fd=6
+[2025-01-03 18:08:56] [INFO] Closed connection with client
+[2025-01-03 18:08:56] [INFO] Finished thread for client_fd=6
