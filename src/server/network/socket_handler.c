@@ -250,7 +250,13 @@ void handle_client_message(int client_fd, const char* message) {
             char username[50], password[50];
             sscanf(message + 14, "%s %s", username, password); // Bỏ qua "CONTROL LOGIN "
             handle_login(client_fd, username, password); // Xử lý đăng nhập
-        } else {
+        } else if (strncmp(message + 8, "REGISTER",8) == 0) {
+            char username[50], password[50];
+            sscanf(message + 17, "%s %s", username, password); // Bỏ qua "CONTROL REGISTER "
+            handle_register(client_fd, username, password); // Xử lý đăng ký
+        }
+        
+        else {
             handle_control_message(client_fd,userid, message + 8); // Các lệnh CONTROL khác
         }
         return;

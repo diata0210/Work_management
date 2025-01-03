@@ -21,7 +21,8 @@ bool send_create_task(const char* task_name, const char* description, int projec
 // Hàm gửi thông điệp cập nhật trạng thái task tới server
 void send_task_update(int client_fd, int task_id, const char* status);
 bool send_add_comment(int task_id, const char *content);
-bool send_add_attachment(int task_id, const char *file_name, const char *file_path) ;
+// bool send_add_attachment(int task_id, const char *file_name, const char *file_path) ;
+bool send_add_attachment(int task_id, const char *file_name, const char *file_path);
 bool send_get_comments_request(int task_id, char *response, size_t response_size);
 bool send_get_attachments_request(int task_id, char *response, size_t response_size);
 

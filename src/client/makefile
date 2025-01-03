@@ -15,6 +15,8 @@ BIN_DIR = ../../bin
 # Tệp nguồn và đối tượng
 SRCS = $(SRC_DIR)/main.c \
        $(NETWORK_DIR)/socket.c \
+	   $(UI_DIR)/start_window.c \
+	   $(UI_DIR)/register_window.c \
        $(UI_DIR)/login_window.c \
        $(UI_DIR)/main_window.c \
 	   $(UI_DIR)/chat_window.c \

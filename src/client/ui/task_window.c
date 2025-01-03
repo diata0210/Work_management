@@ -3,7 +3,49 @@
 #include "../message_handlers/data_message_handler.h"
 #include <stdio.h>
 
+bool send_download_request(int file_id, const char *save_path) {
+    char request[256];
+    snprintf(request, sizeof(request), "DATA DOWNLOAD %d", file_id);
 
+    char response[4096];
+    if (send_request(request, response)) {
+        // Giả định phản hồi từ server là nội dung file
+        FILE *file = fopen(save_path, "wb");
+        if (file) {
+            fwrite(response, 1, strlen(response), file);
+            fclose(file);
+            return true;
+        }
+    }
+    return false;
+}
+
+void on_download_clicked(GtkButton *button, gpointer user_data) {
+    int file_id = GPOINTER_TO_INT(user_data);
+
+    char file_path[256];
+    snprintf(file_path, sizeof(file_path), "downloads/file_%d", file_id);
+
+    if (send_download_request(file_id, file_path)) {
+        g_print("File %d đã được tải xuống và lưu tại: %s\n", file_id, file_path);
+        GtkWidget *dialog = gtk_message_dialog_new(NULL,
+                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                   GTK_MESSAGE_INFO,
+                                                   GTK_BUTTONS_OK,
+                                                   "File đã được tải xuống: %s", file_path);
+        gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
+    } else {
+        g_print("Không thể tải xuống file %d.\n", file_id);
+        GtkWidget *dialog = gtk_message_dialog_new(NULL,
+                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
+                                                   GTK_MESSAGE_ERROR,
+                                                   GTK_BUTTONS_CLOSE,
+                                                   "Lỗi khi tải file.");
+        gtk_dialog_run(GTK_DIALOG(dialog));
+        gtk_widget_destroy(dialog);
+    }
+}
 
 
 GtkWidget *create_comment_view(int task_id) {
@@ -39,6 +81,36 @@ GtkWidget *create_comment_view(int task_id) {
 
 
 
+// GtkWidget *create_attachment_view(int task_id) {
+//     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+//     GtkWidget *label = gtk_label_new("Attachments:");
+//     gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
+
+//     char response[4096];
+//     if (send_get_attachments_request(task_id, response, sizeof(response))) {
+//         const char *start = response + 12; // Bỏ "ATTACHMENTS\n"
+//         const char *end;
+//         while ((end = strchr(start, '\n')) != NULL) {
+//             size_t length = end - start;
+//             char line[256];
+//             strncpy(line, start, length);
+//             line[length] = '\0';
+
+//             GtkWidget *attachment_label = gtk_label_new(line);
+//             gtk_box_pack_start(GTK_BOX(vbox), attachment_label, FALSE, FALSE, 0);
+//             start = end + 1;
+//         }
+//     } else {
+//         GtkWidget *no_attachment_label = gtk_label_new("No attachments available.");
+//         gtk_box_pack_start(GTK_BOX(vbox), no_attachment_label, FALSE, FALSE, 0);
+//     }
+
+//     GtkWidget *add_attachment_button = gtk_button_new_with_label("Thêm File");
+//     g_signal_connect(add_attachment_button, "clicked", G_CALLBACK(on_add_attachment_clicked), GINT_TO_POINTER(task_id));
+//     gtk_box_pack_start(GTK_BOX(vbox), add_attachment_button, FALSE, FALSE, 0);
+
+//     return vbox;
+// }
 GtkWidget *create_attachment_view(int task_id) {
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
     GtkWidget *label = gtk_label_new("Attachments:");
@@ -54,8 +126,24 @@ GtkWidget *create_attachment_view(int task_id) {
             strncpy(line, start, length);
             line[length] = '\0';
 
-            GtkWidget *attachment_label = gtk_label_new(line);
-            gtk_box_pack_start(GTK_BOX(vbox), attachment_label, FALSE, FALSE, 0);
+            // Tách thông tin file (giả định định dạng "FILE_ID: %d, FILE_NAME: %s")
+            int file_id;
+            char file_name[128];
+            if (sscanf(line, "FILE_ID: %d, FILE_NAME: %127s", &file_id, file_name) == 2) {
+                GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+
+                // Tên file
+                GtkWidget *file_label = gtk_label_new(file_name);
+                gtk_box_pack_start(GTK_BOX(hbox), file_label, FALSE, FALSE, 0);
+
+                // Nút download
+                GtkWidget *download_button = gtk_button_new_with_label("Download");
+                g_signal_connect(download_button, "clicked", G_CALLBACK(on_download_clicked), GINT_TO_POINTER(file_id));
+                gtk_box_pack_start(GTK_BOX(hbox), download_button, FALSE, FALSE, 0);
+
+                gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+            }
+
             start = end + 1;
         }
     } else {
@@ -69,6 +157,7 @@ GtkWidget *create_attachment_view(int task_id) {
 
     return vbox;
 }
+
 
 void on_update_status_clicked(GtkButton *button, gpointer user_data) {
     int task_id = GPOINTER_TO_INT(user_data);
@@ -141,6 +230,43 @@ void reset_comment_view(GtkWidget *comment_view, int task_id) {
     // Hiển thị lại toàn bộ widget
     gtk_widget_show_all(comment_view);
 }
+// void reset_attachment_view(GtkWidget *attachment_view, int task_id) {
+//     // Xóa toàn bộ các widget con hiện tại
+//     GList *children = gtk_container_get_children(GTK_CONTAINER(attachment_view));
+//     for (GList *iter = children; iter != NULL; iter = iter->next) {
+//         gtk_widget_destroy(GTK_WIDGET(iter->data));
+//     }
+//     g_list_free(children);
+
+//     // Thêm lại label tiêu đề
+//     GtkWidget *label = gtk_label_new("Attachments:");
+//     gtk_box_pack_start(GTK_BOX(attachment_view), label, FALSE, FALSE, 0);
+
+//     // Lấy dữ liệu từ server
+//     char response[4096];
+//     if (send_get_attachments_request(task_id, response, sizeof(response))) {
+//         const char *start = response;
+//         const char *end;
+//         while ((end = strchr(start, '\n')) != NULL) {
+//             size_t length = end - start;
+//             char line[256];
+//             strncpy(line, start, length);
+//             line[length] = '\0';
+
+//             GtkWidget *attachment_label = gtk_label_new(line);
+//             gtk_box_pack_start(GTK_BOX(attachment_view), attachment_label, FALSE, FALSE, 0);
+//             start = end + 1;
+//         }
+//     }
+
+//     // Thêm lại nút thêm file đính kèm
+//     GtkWidget *add_attachment_button = gtk_button_new_with_label("Thêm File");
+//     g_signal_connect(add_attachment_button, "clicked", G_CALLBACK(on_add_attachment_clicked), GINT_TO_POINTER(task_id));
+//     gtk_box_pack_start(GTK_BOX(attachment_view), add_attachment_button, FALSE, FALSE, 0);
+
+//     // Hiển thị lại toàn bộ widget
+//     gtk_widget_show_all(attachment_view);
+// }
 void reset_attachment_view(GtkWidget *attachment_view, int task_id) {
     // Xóa toàn bộ các widget con hiện tại
     GList *children = gtk_container_get_children(GTK_CONTAINER(attachment_view));
@@ -156,7 +282,7 @@ void reset_attachment_view(GtkWidget *attachment_view, int task_id) {
     // Lấy dữ liệu từ server
     char response[4096];
     if (send_get_attachments_request(task_id, response, sizeof(response))) {
-        const char *start = response;
+        const char *start = response + 12; // Bỏ "ATTACHMENTS\n"
         const char *end;
         while ((end = strchr(start, '\n')) != NULL) {
             size_t length = end - start;
@@ -164,10 +290,29 @@ void reset_attachment_view(GtkWidget *attachment_view, int task_id) {
             strncpy(line, start, length);
             line[length] = '\0';
 
-            GtkWidget *attachment_label = gtk_label_new(line);
-            gtk_box_pack_start(GTK_BOX(attachment_view), attachment_label, FALSE, FALSE, 0);
+            // Tách thông tin file (giả định định dạng "FILE_ID: %d, FILE_NAME: %s")
+            int file_id;
+            char file_name[128];
+            if (sscanf(line, "FILE_ID: %d, FILE_NAME: %127s", &file_id, file_name) == 2) {
+                GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 10);
+
+                // Tên file
+                GtkWidget *file_label = gtk_label_new(file_name);
+                gtk_box_pack_start(GTK_BOX(hbox), file_label, FALSE, FALSE, 0);
+
+                // Nút download
+                GtkWidget *download_button = gtk_button_new_with_label("Download");
+                g_signal_connect(download_button, "clicked", G_CALLBACK(on_download_clicked), GINT_TO_POINTER(file_id));
+                gtk_box_pack_start(GTK_BOX(hbox), download_button, FALSE, FALSE, 0);
+
+                gtk_box_pack_start(GTK_BOX(attachment_view), hbox, FALSE, FALSE, 0);
+            }
+
             start = end + 1;
         }
+    } else {
+        GtkWidget *no_attachment_label = gtk_label_new("No attachments available.");
+        gtk_box_pack_start(GTK_BOX(attachment_view), no_attachment_label, FALSE, FALSE, 0);
     }
 
     // Thêm lại nút thêm file đính kèm
@@ -178,6 +323,7 @@ void reset_attachment_view(GtkWidget *attachment_view, int task_id) {
     // Hiển thị lại toàn bộ widget
     gtk_widget_show_all(attachment_view);
 }
+
 void on_add_comment_clicked(GtkButton *button, gpointer user_data) {
     int task_id = GPOINTER_TO_INT(user_data);
 
@@ -208,21 +354,58 @@ void on_add_comment_clicked(GtkButton *button, gpointer user_data) {
 
     gtk_widget_destroy(dialog);
 }
+// void on_add_attachment_clicked(GtkButton *button, gpointer user_data) {
+//     int task_id = GPOINTER_TO_INT(user_data);
+
+//     GtkWidget *dialog = gtk_file_chooser_dialog_new("Chọn File",
+//                                                     NULL,
+//                                                     GTK_FILE_CHOOSER_ACTION_OPEN,
+//                                                     "Hủy", GTK_RESPONSE_CANCEL,
+//                                                     "Thêm", GTK_RESPONSE_ACCEPT,
+//                                                     NULL);
+
+//     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+//         GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
+//         char *file_path = gtk_file_chooser_get_filename(chooser);
+//         char *file_name = g_path_get_basename(file_path);
+
+//         if (send_add_attachment(task_id, file_name, file_path)) {
+//             g_print("File đính kèm đã được thêm thành công.\n");
+
+//             // Reset lại attachment view
+//             GtkWidget *attachment_view = gtk_widget_get_parent(GTK_WIDGET(button));
+//             reset_attachment_view(attachment_view, task_id);
+//         } else {
+//             g_print("Không thể thêm file đính kèm.\n");
+//         }
+
+//         g_free(file_path);
+//         g_free(file_name);
+//     }
+
+//     gtk_widget_destroy(dialog);
+// }
+
+
 void on_add_attachment_clicked(GtkButton *button, gpointer user_data) {
     int task_id = GPOINTER_TO_INT(user_data);
 
-    GtkWidget *dialog = gtk_file_chooser_dialog_new("Chọn File",
-                                                    NULL,
-                                                    GTK_FILE_CHOOSER_ACTION_OPEN,
-                                                    "Hủy", GTK_RESPONSE_CANCEL,
-                                                    "Thêm", GTK_RESPONSE_ACCEPT,
-                                                    NULL);
+    // Tạo dialog chọn file
+    GtkWidget *dialog = gtk_file_chooser_dialog_new(
+        "Chọn File",
+        NULL,
+        GTK_FILE_CHOOSER_ACTION_OPEN,
+        "Hủy", GTK_RESPONSE_CANCEL,
+        "Thêm", GTK_RESPONSE_ACCEPT,
+        NULL
+    );
 
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
         GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
         char *file_path = gtk_file_chooser_get_filename(chooser);
         char *file_name = g_path_get_basename(file_path);
 
+        // Gửi file đến server
         if (send_add_attachment(task_id, file_name, file_path)) {
             g_print("File đính kèm đã được thêm thành công.\n");
 
@@ -233,6 +416,7 @@ void on_add_attachment_clicked(GtkButton *button, gpointer user_data) {
             g_print("Không thể thêm file đính kèm.\n");
         }
 
+        // Giải phóng tài nguyên
         g_free(file_path);
         g_free(file_name);
     }

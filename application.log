@@ -1,0 +1,10 @@
+[2025-01-03 15:43:18] [ERROR] Error binding socket
+[2025-01-03 15:43:18] [ERROR] Failed to set up server socket
+[2025-01-03 15:43:21] [INFO] Server is listening on port 8081
+[2025-01-03 15:43:21] [INFO] Server is running on port 8081...
+[2025-01-03 15:43:25] [INFO] Client connected with IP: 127.0.0.1 and Port: 47370
+[2025-01-03 15:43:25] [INFO] Started thread for client_fd=5
+[2025-01-03 15:43:37] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 15:43:37] [INFO] Sent project list to user 1
+[2025-01-03 15:43:38] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 15:43:38] [INFO] Sent member list for project 14

@@ -5,7 +5,7 @@
 #include "task_dao.h"
 #include "logger.h"
 #include "socket_handler.h"  // Để sử dụng send_data
-
+#include <sys/stat.h>
 extern sqlite3 *db;
 // task_name, description, project_id, assignee_id
 void handle_create_task(int client_fd, const char *task_name, const char *description, int project_id, int assignee_id) {
@@ -125,16 +125,131 @@ void handle_add_comment(int client_fd, int task_id, int user_id, const char* com
     }
 }
 
-void handle_file_attachment(int client_fd, int task_id, const char* filename, const char* file_path, int uploaded_by) {
-    if (add_attachment_to_task(db, task_id, filename, file_path, uploaded_by) == SQLITE_OK) {
-        send_data(client_fd, "FILE_ATTACHED");
-        log_info("File %s attached to task %d by user %d", filename, task_id, uploaded_by);
+
+#define BUFFER_SIZE 1024
+
+// Đường dẫn thư mục uploads
+#define UPLOADS_DIR "/home/parallels/Desktop/Work-managment/Work_management/src/server/database/uploads"
+
+// void handle_file_attachment(int client_fd,int userid) {
+//     char buffer[BUFFER_SIZE];
+//     char filename[256];
+//     char file_path[512];
+//     int task_id;
+
+//     // Nhận metadata từ client
+//     memset(buffer, 0, BUFFER_SIZE);
+//     if (recv(client_fd, buffer, BUFFER_SIZE, 0) <= 0) {
+//         log_error("Failed to receive metadata from client.");
+//         send(client_fd, "FILE_ATTACHMENT_FAILED", strlen("FILE_ATTACHMENT_FAILED"), 0);
+//         return;
+//     }
+
+//     // Phân tích metadata
+//     if (sscanf(buffer, "ADD_ATTACHMENT %d %255s", &task_id, filename) != 2) {
+//         log_error("Invalid metadata format received: %s", buffer);
+//         send(client_fd, "FILE_ATTACHMENT_FAILED", strlen("FILE_ATTACHMENT_FAILED"), 0);
+//         return;
+//     }
+
+//     // Kiểm tra hoặc tạo thư mục uploads
+//     struct stat st = {0};
+//     if (stat(UPLOADS_DIR, &st) == -1) {
+//         if (mkdir(UPLOADS_DIR, 0700) != 0) {
+//             log_error("Failed to create uploads directory: %s", UPLOADS_DIR);
+//             send(client_fd, "FILE_ATTACHMENT_FAILED", strlen("FILE_ATTACHMENT_FAILED"), 0);
+//             return;
+//         }
+//     }
+
+//     // Xây dựng đường dẫn file để lưu
+//     snprintf(file_path, sizeof(file_path), "%s/%s", UPLOADS_DIR, filename);
+
+//     // Mở file để ghi dữ liệu
+//     FILE *file = fopen(file_path, "wb");
+//     if (file == NULL) {
+//         log_error("Failed to open file for writing: %s", file_path);
+//         send(client_fd, "FILE_ATTACHMENT_FAILED", strlen("FILE_ATTACHMENT_FAILED"), 0);
+//         return;
+//     }
+
+//     // Nhận dữ liệu file từ client
+//     while (1) {
+//         memset(buffer, 0, BUFFER_SIZE);
+//         ssize_t bytes_received = recv(client_fd, buffer, BUFFER_SIZE, 0);
+//         if (bytes_received <= 0) break; // Kết thúc nhận file hoặc gặp lỗi
+//         fwrite(buffer, 1, bytes_received, file);
+//     }
+//     fclose(file);
+
+//     // Cập nhật cơ sở dữ liệu
+//     if (add_attachment_to_task(db,task_id, filename, file_path, userid) == SQLITE_OK) {
+//         send(client_fd, "ATTACHMENT_ADDED", strlen("ATTACHMENT_ADDED"), 0);
+//         log_info("File %s attached to task %d successfully.", filename, task_id);
+//     } else {
+//         send(client_fd, "FILE_ATTACHMENT_FAILED", strlen("FILE_ATTACHMENT_FAILED"), 0);
+//         log_error("Failed to attach file %s to task %d.", filename, task_id);
+//     }
+// }
+void handle_file_attachment(int client_fd, int userid,int task_id, char *filename) {
+    char buffer[BUFFER_SIZE];
+    printf("tassddk: %d\n", task_id);
+    char file_path[512];
+    FILE *file = NULL;
+
+    while (1) {
+        memset(buffer, 0, BUFFER_SIZE);
+        ssize_t bytes_received = recv(client_fd, buffer, BUFFER_SIZE, 0);
+        if (bytes_received <= 0) {
+            log_error("Failed to receive data from client.");
+            if (file) fclose(file);
+            return;
+        }
+
+        // Kiểm tra tín hiệu kết thúc
+        if (strncmp(buffer, "DATA ADD_ATTACHMENT END", 23) == 0) {
+            log_info("File transfer completed.");
+            if (file) fclose(file);
+            break;
+        }
+
+        // Xử lý metadata
+        if (strncmp(buffer, "DATA ADD_ATTACHMENT", 19) == 0) {
+            if (!file) {
+                // Lấy metadata từ gói đầu tiên
+                // if (sscanf(buffer, "DATA ADD_ATTACHMENT %d %255s", &task_id, filename) != 2) {
+                //     log_error("Failed to parse metadata.");
+                //     return;
+                // }
+
+                // Tạo đường dẫn file
+                snprintf(file_path, sizeof(file_path), "%s/%s", UPLOADS_DIR, filename);
+
+                // Mở file để ghi nội dung
+                file = fopen(file_path, "wb");
+                if (file == NULL) {
+                    log_error("Failed to open file for writing: %s", file_path);
+                    return;
+                }
+
+                log_info("Receiving file: %s", file_path);
+            } else {
+                // Ghi nội dung file từ gói tiếp theo
+                char *content = buffer + 20; // Bỏ tiền tố "DATA ADD_ATTACHMENT "
+                fwrite(content, 1, bytes_received - 20, file);
+            }
+        }
+    }
+
+    // Thêm file vào cơ sở dữ liệu
+    if (add_attachment_to_task(db, task_id, filename, file_path, userid) == SQLITE_OK) {
+        send(client_fd, "ATTACHMENT_ADDED", strlen("ATTACHMENT_ADDED"), 0);
+        log_info("File %s attached to task %d successfully.", filename, task_id);
     } else {
-        send_data(client_fd, "FILE_ATTACHMENT_FAILED");
-        log_error("Failed to attach file %s to task %d", filename, task_id);
+        send(client_fd, "FILE_ATTACHMENT_FAILED", strlen("FILE_ATTACHMENT_FAILED"), 0);
+        log_error("Failed to attach file %s to task %d.", filename, task_id);
     }
 }
-
 void handle_data_message(int client_fd, int userid, const char* message) {
     char action[50];
     int task_id, user_id, uploaded_by;
@@ -215,12 +330,24 @@ void handle_data_message(int client_fd, int userid, const char* message) {
             log_error("Invalid GET_COMMENTS format: %s", message);
         }
     }
+
+     else if (strcmp(action, "GET_ATTACHMENTS") == 0) {
+        // Phân tích task_id
+        if (sscanf(message, "GET_ATTACHMENTS %d", &task_id) == 1) {
+            handle_get_attachments(client_fd, task_id);
+        } else {
+            send_data(client_fd, "INVALID_GET_ATTACHMENTS_FORMAT");
+            log_error("Invalid GET_ATTACHMENTS format: %s", message);
+        }
+    }
     
     
-    else if (strcmp(action, "FILE_ATTACHMENT") == 0) {
+    else if (strcmp(action, "ADD_ATTACHMENT") == 0) {
         // Phân tích task_id, filename, file_path và uploaded_by
-        if (sscanf(message, "FILE_ATTACHMENT %d %99s %199s %d", &task_id, filename, file_path, &uploaded_by) == 4) {
-            handle_file_attachment(client_fd, task_id, filename, file_path, uploaded_by);
+        if (sscanf(message, "ADD_ATTACHMENT %d %99s", &task_id, filename) == 2) {
+            printf(" taskidi %d",task_id);
+            handle_file_attachment(client_fd,user_id, task_id, filename);
+
         } else {
             send_data(client_fd, "INVALID_FILE_ATTACHMENT_FORMAT");
             log_error("Invalid FILE_ATTACHMENT format: %s", message);

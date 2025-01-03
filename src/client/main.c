@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "network/socket.h"
+#include "ui/start_window.h"
 #include "ui/login_window.h"
 
 // Hàm khởi tạo socket và kiểm tra kết nối
@@ -36,16 +37,17 @@ int main(int argc, char *argv[]) {
     }
 
     // Tạo giao diện đăng nhập
-    GtkWidget *login_window = create_login_window();
-    if (!login_window) {
-        fprintf(stderr, "Failed to create login window. Exiting...\n");
+    GtkWidget *start_window = create_start_window();
+    if (!start_window) {
+        fprintf(stderr, "Failed to create start window. Exiting...\n");
         close_socket();
         return EXIT_FAILURE;
     }
 
-    // Hiển thị cửa sổ đăng nhập
-    gtk_widget_show_all(login_window);
+    // Hiển thị cửa sổ start_window
+    gtk_widget_show_all(start_window);
 
+    
     // Bắt đầu vòng lặp GTK
     gtk_main();
 

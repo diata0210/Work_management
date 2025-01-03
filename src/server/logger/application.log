@@ -1,0 +1,1500 @@
+[2025-01-03 15:44:49] [ERROR] Error binding socket
+[2025-01-03 15:44:49] [ERROR] Failed to set up server socket
+[2025-01-03 15:44:52] [INFO] Server is listening on port 8080
+[2025-01-03 15:44:52] [INFO] Server is running on port 8080...
+[2025-01-03 15:44:54] [INFO] Client connected with IP: 127.0.0.1 and Port: 34210
+[2025-01-03 15:44:54] [INFO] Started thread for client_fd=5
+[2025-01-03 15:45:04] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 15:45:04] [INFO] Sent project list to user 1
+[2025-01-03 15:45:05] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 15:45:05] [INFO] Sent member list for project 14
+[2025-01-03 15:45:20] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 15:45:20] [INFO] Sent member list for project 14
+[2025-01-03 15:45:39] [INFO] Project ITSS created successfully
+[2025-01-03 15:45:39] [INFO] Sent project list to user 1
+[2025-01-03 15:45:41] [INFO] Project 20 has no tasks
+[2025-01-03 15:45:41] [INFO] Sent member list for project 20
+[2025-01-03 15:45:51] [INFO] User 2 added to project 20 with role pã‰ÿÿ
+[2025-01-03 15:45:51] [INFO] Sent member list for project 20
+[2025-01-03 15:46:12] [ERROR] Failed to add user 2 to project 20
+[2025-01-03 15:46:18] [INFO] Project 20 has no tasks
+[2025-01-03 15:46:18] [INFO] Sent member list for project 20
+[2025-01-03 15:46:34] [INFO] Task 'task1' created successfully for project 20 and assigned to user 2
+[2025-01-03 15:46:34] [INFO] Sent task list for project 20 to client_fd 5
+[2025-01-03 15:46:34] [INFO] Sent member list for project 20
+[2025-01-03 15:46:38] [INFO] Sent comments for task_id 10 to client_fd 5
+[2025-01-03 15:46:38] [ERROR] Unknown message type: GET_ATTACHMENTS 10
+[2025-01-03 15:46:44] [INFO] Comment added to task 10 by user 1
+[2025-01-03 15:46:44] [INFO] Sent comments for task_id 10 to client_fd 5
+[2025-01-03 15:46:51] [INFO] Task 10 updated to status: inprogress
+[2025-01-03 15:46:57] [INFO] Sent task list for project 20 to client_fd 5
+[2025-01-03 15:46:57] [INFO] Sent member list for project 20
+[2025-01-03 15:48:16] [INFO] Client connected with IP: 127.0.0.1 and Port: 59158
+[2025-01-03 15:48:16] [INFO] Started thread for client_fd=6
+[2025-01-03 15:48:32] [INFO] User user2 (ID: 2) logged in successfully
+[2025-01-03 15:48:32] [INFO] Sent project list to user 2
+[2025-01-03 15:48:36] [INFO] Sent task list for project 20 to client_fd 6
+[2025-01-03 15:48:36] [INFO] Sent member list for project 20
+[2025-01-03 15:49:06] [INFO] Client disconnected: client_fd=6
+[2025-01-03 15:49:06] [INFO] Closed connection with client
+[2025-01-03 15:49:06] [INFO] Finished thread for client_fd=6
+[2025-01-03 16:37:53] [INFO] Server is listening on port 8081
+[2025-01-03 16:37:53] [INFO] Server is running on port 8081...
+[2025-01-03 16:38:05] [INFO] Client connected with IP: 127.0.0.1 and Port: 47882
+[2025-01-03 16:38:05] [INFO] Started thread for client_fd=5
+[2025-01-03 16:38:19] [ERROR] Login failed for user user1
+[2025-01-03 16:38:26] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 16:38:26] [INFO] Sent project list to user 1
+[2025-01-03 16:38:27] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 16:38:27] [INFO] Sent member list for project 14
+[2025-01-03 16:38:40] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 16:38:40] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 16:39:02] [ERROR] Unknown message type: ADD_ATTACHMENT 1 codegen.c
+[2025-01-03 16:39:02] [ERROR] Unknown message type from userid 1: /*
+ * @copyright (c) 2008, Hedspi, Hanoi University of Technology
+ * @author Huu-Duc Nguyen
+ * @version 1.0
+ */
+
+#include <stdio.h>
+#include "reader.h"
+#include "codegen.h"
+
+#define CODE_SIZE 10000
+extern SymTab *symtab;
+
+extern Object *readiFunction;
+extern Object *readcFunction;
+extern Object *writeiProcedure;
+extern Object *writecProcedure;
+extern Object *writelnProcedure;
+
+CodeBlock *codeBlock;
+
+void genVariableAddress(Object *var)
+{
+  // TODO
+  int level = computeNestedLevel(var->varAttrs->scope);
+  genLA(level, var->varAttrs->localOffset);
+}
+
+void genVariableValue(Object *var)
+{
+  // TODO
+  int level = computeNestedLevel(var->varAttrs->scope);
+  genLV(level, var->varAttrs->localOffset);
+}
+
+int isPredefinedFunction(Object *func)
+{
+  return ((func == readiFunction) || (func == readcFunction));
+}
+
+int isPredefinedProcedure(Object *proc)
+{
+  return ((proc == writeiProcedure) || (proc == writecProcedure) || (proc == writelnProcedure));
+}
+
+void genPredefinedProcedureCall(Object *proc)
+{
+  if (proc == writeiP
+[2025-01-03 16:39:02] [ERROR] Unknown message type from userid 1: r
+[2025-01-03 16:39:02] [ERROR] Unknown message type from userid 1: ocedure)
+    genWRI();
+  else if (proc == writecProcedure)
+    genWRC();
+  else if (proc == writelnProcedure)
+    genWLN();
+}
+
+void genPredefinedFunctionCall(Object *func)
+{
+  if (func == readiFunction)
+    genRI();
+  else if (func == readcFunction)
+    genRC();
+}
+
+void genLA(int level, int offset)
+{
+  emitLA(codeBlock, level, offset);
+}
+
+void genLV(int level, int offset)
+{
+  emitLV(codeBlock, level, offset);
+}
+
+void genLC(WORD constant)
+{
+  emitLC(codeBlock, constant);
+}
+
+void genLI(void)
+{
+  emitLI(codeBlock);
+}
+
+void genINT(int delta)
+{
+  emitINT(codeBlock, delta);
+}
+
+void genDCT(int delta)
+{
+  emitDCT(codeBlock, delta);
+}
+
+Instruction *genJ(CodeAddress label)
+{
+  Instruction *inst = codeBlock->code + codeBlock->codeSize;
+  emitJ(codeBlock, label);
+  return inst;
+}
+
+Instruction *genFJ(CodeAddress label)
+{
+  Instruction *inst = codeBlock->code + codeBlock->codeSize;
+  emitFJ(codeBlock, label);
+  return inst;
+}
+
+void genHL(void)
+{
+  emitHL(codeBlock);
+}
+
+void genST(void)
+{
+  emitST(codeBlock);
+}
+
+void genCA
+[2025-01-03 16:39:02] [ERROR] Unknown message type from userid 1: LL(int level, CodeAddress label)
+{
+  emitCALL(codeBlock, level, label);
+}
+
+void genEP(void)
+{
+  emitEP(codeBlock);
+}
+
+void genEF(void)
+{
+  emitEF(codeBlock);
+}
+
+void genRC(void)
+{
+  emitRC(codeBlock);
+}
+
+void genRI(void)
+{
+  emitRI(codeBlock);
+}
+
+void genWRC(void)
+{
+  emitWRC(codeBlock);
+}
+
+void genWRI(void)
+{
+  emitWRI(codeBlock);
+}
+
+void genWLN(void)
+{
+  emitWLN(codeBlock);
+}
+
+void genAD(void)
+{
+  emitAD(codeBlock);
+}
+
+void genSB(void)
+{
+  emitSB(codeBlock);
+}
+
+void genML(void)
+{
+  emitML(codeBlock);
+}
+
+void genDV(void)
+{
+  emitDV(codeBlock);
+}
+
+void genNEG(void)
+{
+  emitNEG(codeBlock);
+}
+
+void genCV(void)
+{
+  emitCV(codeBlock);
+}
+
+void genEQ(void)
+{
+  emitEQ(codeBlock);
+}
+
+void genNE(void)
+{
+  emitNE(codeBlock);
+}
+
+void genGT(void)
+{
+  emitGT(codeBlock);
+}
+
+void genGE(void)
+{
+  emitGE(codeBlock);
+}
+
+void genLT(void)
+{
+  emitLT(codeBlock);
+}
+
+void genLE(void)
+{
+  emitLE(codeBlock);
+}
+
+void updateJ(Instruction *jmp, CodeAddress label)
+{
+  jmp->q = label;
+}
+
+void updateFJ(Instruction *jmp, CodeAddress label)
+[2025-01-03 16:39:02] [ERROR] Unknown message type from userid 1: 
+{
+  jmp->q = label;
+}
+
+CodeAddress getCurrentCodeAddress(void)
+{
+  return codeBlock->codeSize;
+}
+
+void initCodeBuffer(void)
+{
+  codeBlock = createCodeBlock(CODE_SIZE);
+}
+
+void printCodeBuffer(void)
+{
+  printCodeBlock(codeBlock);
+}
+
+void cleanCodeBuffer(void)
+{
+  freeCodeBlock(codeBlock);
+}
+
+int serialize(char *fileName)
+{
+  FILE *f;
+
+  f = fopen(fileName, "wb");
+  if (f == NULL)
+    return IO_ERROR;
+  saveCode(codeBlock, f);
+  fclose(f);
+  return IO_SUCCESS;
+}
+DATA GET_ATTACHMENTS 1
+[2025-01-03 16:42:39] [ERROR] Error binding socket
+[2025-01-03 16:42:39] [ERROR] Failed to set up server socket
+[2025-01-03 16:42:41] [INFO] Server is listening on port 8080
+[2025-01-03 16:42:41] [INFO] Server is running on port 8080...
+[2025-01-03 16:42:46] [INFO] Client connected with IP: 127.0.0.1 and Port: 36938
+[2025-01-03 16:42:46] [INFO] Started thread for client_fd=5
+[2025-01-03 16:42:54] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 16:42:54] [INFO] Sent project list to user 1
+[2025-01-03 16:42:56] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 16:42:56] [INFO] Sent member list for project 14
+[2025-01-03 16:42:58] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 16:42:58] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 16:43:10] [ERROR] Invalid metadata format received: DATA GET_ATTACHMENTS 1
+[2025-01-03 16:44:50] [ERROR] Invalid metadata format received: /*
+ * @copyright (c) 2008, Hedspi, Hanoi University of Technology
+ * @author Huu-Duc Nguyen
+ * @version 1.0
+ */
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "reader.h"
+#include "scanner.h"
+#include "parser.h"
+#include "error.h"
+#include "debug.h"
+
+Token *currentToken;
+Token *lookAhead;
+
+extern Type *intType;
+extern Type *charType;
+extern SymTab *symtab;
+
+void scan(void)
+{
+  Token *tmp = currentToken;
+  currentToken = lookAhead;
+  lookAhead = getValidToken();
+  free(tmp);
+}
+
+void eat(TokenType tokenType)
+{
+  if (lookAhead->tokenType == tokenType)
+  {
+    scan();
+  }
+  else
+    missingToken(tokenType, lookAhead->lineNo, lookAhead->colNo);
+}
+
+void compileProgram(void)
+{
+
+  eat(KW_PROGRAM);
+  eat(TK_IDENT);
+
+  Object *pro = createProgramObject(currentToken->string);
+  enterBlock(pro->progAttrs->scope);
+
+  eat(SB_SEMICOLON);
+  compileBlock();
+  eat(SB_PERIOD);
+
+  exitBlock();
+}
+
+void compileBlock(void)
+{
+  // TODO: create and declare constant objects
+  Object *constant;
+  if (lookAhead->tokenType == KW_CONST)
+
+[2025-01-03 16:44:50] [ERROR] Unknown message type from userid 1:   {
+    eat(KW_CONST);
+
+    do
+    {
+      eat(TK_IDENT);
+
+      constant = createConstantObject(currentToken->string);
+
+      eat(SB_EQ);
+
+      ConstantValue *c = compileConstant();
+      constant->constAttrs->value = c;
+      declareObject(constant);
+
+      eat(SB_SEMICOLON);
+    } while (lookAhead->tokenType == TK_IDENT);
+
+    compileBlock2();
+  }
+  else
+    compileBlock2();
+}
+
+void compileBlock2(void)
+{
+  // TODO: create and declare type objects
+  if (lookAhead->tokenType == KW_TYPE)
+  {
+    eat(KW_TYPE);
+
+    do
+    {
+      eat(TK_IDENT);
+      Object *obj = createTypeObject(currentToken->string);
+
+      eat(SB_EQ);
+      obj->typeAttrs->actualType = compileType();
+      eat(SB_SEMICOLON);
+
+      declareObject(obj);
+    } while (lookAhead->tokenType == TK_IDENT);
+
+    compileBlock3();
+  }
+  else
+    compileBlock3();
+}
+
+void compileBlock3(void)
+{
+  // TODO: create and declare variable objects
+  if (lookAhead->tokenType == KW_VAR)
+  {
+    eat(KW_VAR);
+
+    do
+    {
+      eat(TK_IDENT);
+      Object *obj 
+[2025-01-03 16:44:50] [ERROR] Unknown message type from userid 1: = createVariableObject(currentToken->string);
+
+      eat(SB_COLON);
+      obj->varAttrs->type = compileType();
+
+      eat(SB_SEMICOLON);
+      declareObject(obj);
+    } while (lookAhead->tokenType == TK_IDENT);
+
+    compileBlock4();
+  }
+  else
+    compileBlock4();
+}
+
+void compileBlock4(void)
+{
+  compileSubDecls();
+  compileBlock5();
+}
+
+void compileBlock5(void)
+{
+  eat(KW_BEGIN);
+  compileStatements();
+  eat(KW_END);
+}
+
+void compileSubDecls(void)
+{
+  while ((lookAhead->tokenType == KW_FUNCTION) || (lookAhead->tokenType == KW_PROCEDURE))
+  {
+    if (lookAhead->tokenType == KW_FUNCTION)
+      compileFuncDecl();
+    else
+      compileProcDecl();
+  }
+}
+
+void compileFuncDecl(void)
+{
+  // TODO: create and declare a function object
+  eat(KW_FUNCTION);
+  eat(TK_IDENT);
+  Object *obj = createFunctionObject(currentToken->string);
+  enterBlock(obj->funcAttrs->scope);
+
+  compileParams();
+  eat(SB_COLON);
+  obj->funcAttrs->returnType = compileBasicType();
+  eat(SB_SEMICOLON);
+
+  compileBlock();
+  eat(SB_SEMICOLON);
+  exit
+[2025-01-03 16:44:50] [ERROR] Unknown message type from userid 1: Block();
+
+  declareObject(obj);
+}
+
+void compileProcDecl(void)
+{
+  // TODO: create and declare a procedure object
+  eat(KW_PROCEDURE);
+  eat(TK_IDENT);
+  Object *obj = createProcedureObject(currentToken->string);
+  enterBlock(obj->procAttrs->scope);
+
+  compileParams();
+  eat(SB_SEMICOLON);
+  compileBlock();
+  eat(SB_SEMICOLON);
+
+  exitBlock();
+  declareObject(obj);
+}
+
+ConstantValue *compileUnsignedConstant(void)
+{
+  // TODO: create and return an unsigned constant value
+  ConstantValue *constValue;
+
+  switch (lookAhead->tokenType)
+  {
+  case TK_NUMBER:
+    eat(TK_NUMBER);
+    constValue = makeIntConstant(currentToken->value);
+    break;
+  case TK_IDENT:
+    eat(TK_IDENT);
+    Object *obj = lookupObject(currentToken->string);
+
+    if (obj == NULL)
+    {
+      error(ERR_UNDECLARED_CONSTANT, currentToken->lineNo, currentToken->colNo);
+    }
+    else if (obj->kind != OBJ_CONSTANT)
+    {
+      error(ERR_INVALID_CONSTANT, currentToken->lineNo, currentToken->colNo);
+
+      constValue = (ConstantValue *)malloc(sizeof(
+[2025-01-03 16:44:50] [ERROR] Unknown message type from userid 1: ConstantValue));
+      *constValue = *(obj->constAttrs->value);
+    }
+    break;
+  case TK_CHAR:
+    eat(TK_CHAR);
+    constValue = makeCharConstant(currentToken->string[0]);
+    break;
+  default:
+    error(ERR_INVALID_CONSTANT, lookAhead->lineNo, lookAhead->colNo);
+    break;
+  }
+  return constValue;
+}
+
+ConstantValue *compileConstant(void)
+{
+  // TODO: create and return a constant
+  ConstantValue *constValue;
+
+  switch (lookAhead->tokenType)
+  {
+  case SB_PLUS:
+    eat(SB_PLUS);
+    constValue = compileConstant2();
+    break;
+  case SB_MINUS:
+    eat(SB_MINUS);
+    constValue = compileConstant2();
+    constValue->intValue = -constValue->intValue;
+    break;
+  case TK_CHAR:
+    eat(TK_CHAR);
+    constValue = makeCharConstant(currentToken->string[0]);
+    break;
+  default:
+    constValue = compileConstant2();
+    break;
+  }
+  return constValue;
+}
+
+ConstantValue *compileConstant2(void)
+{
+  // TODO: create and return a constant value
+  ConstantValue *constValue;
+
+  switch (lookAhead->tokenType)
+  {
+  case TK_NU
+[2025-01-03 16:44:50] [ERROR] Unknown message type from userid 1: MBER:
+    eat(TK_NUMBER);
+    constValue = makeIntConstant(currentToken->value);
+    break;
+  case TK_IDENT:
+    eat(TK_IDENT);
+    Object *obj = lookupObject(currentToken->string);
+
+    if (obj == NULL)
+    {
+      error(ERR_UNDECLARED_CONSTANT, currentToken->lineNo, currentToken->colNo);
+    }
+    else if (obj->kind != OBJ_CONSTANT)
+    {
+      error(ERR_INVALID_CONSTANT, currentToken->lineNo, currentToken->colNo);
+    }
+
+    constValue = duplicateConstantValue(obj->constAttrs->value);
+    break;
+  default:
+    error(ERR_INVALID_CONSTANT, lookAhead->lineNo, lookAhead->colNo);
+    break;
+  }
+  return constValue;
+}
+
+Type *compileType(void)
+{
+  // TODO: create and return a type
+  Type *type = (Type *)malloc(sizeof(Type));
+
+  switch (lookAhead->tokenType)
+  {
+  case KW_INTEGER:
+    eat(KW_INTEGER);
+    type->typeClass = TP_INT;
+    break;
+  case KW_CHAR:
+    eat(KW_CHAR);
+    type->typeClass = TP_CHAR;
+    break;
+  case KW_ARRAY:
+    eat(KW_ARRAY);
+    type->typeClass = TP_ARRAY;
+    eat(SB_LSEL);
+    eat(TK_N
+[2025-01-03 16:44:50] [ERROR] Unknown message type from userid 1: UMBER);
+    type->arraySize = currentToken->value;
+    eat(SB_RSEL);
+    eat(KW_OF);
+    type->elementType = compileType();
+    break;
+  case TK_IDENT:
+    eat(TK_IDENT);
+    Object *obj = lookupObject(currentToken->string);
+
+    if (obj == NULL)
+    {
+      error(ERR_UNDECLARED_TYPE, currentToken->lineNo, currentToken->colNo);
+    }
+    else if (obj->kind != OBJ_TYPE)
+    {
+      error(ERR_INVALID_TYPE, currentToken->lineNo, currentToken->colNo);
+    }
+    type = duplicateType(obj->typeAttrs->actualType);
+    break;
+  default:
+    error(ERR_INVALID_TYPE, lookAhead->lineNo, lookAhead->colNo);
+    break;
+  }
+  return type;
+}
+
+Type *compileBasicType(void)
+{
+  // TODO: create and return a basic type
+  Type *type = (Type *)malloc(sizeof(Type));
+
+  switch (lookAhead->tokenType)
+  {
+  case KW_INTEGER:
+    eat(KW_INTEGER);
+    type->typeClass = TP_INT;
+    break;
+  case KW_CHAR:
+    eat(KW_CHAR);
+    type->typeClass = TP_CHAR;
+    break;
+  default:
+    error(ERR_INVALID_BASICTYPE, lookAhead->lineNo, lookAhead->colN
+[2025-01-03 16:44:50] [ERROR] Unknown message type from userid 1: o);
+    break;
+  }
+  return type;
+}
+
+void compileParams(void)
+{
+  if (lookAhead->tokenType == SB_LPAR)
+  {
+    eat(SB_LPAR);
+    compileParam();
+    while (lookAhead->tokenType == SB_SEMICOLON)
+    {
+      eat(SB_SEMICOLON);
+      compileParam();
+    }
+    eat(SB_RPAR);
+  }
+}
+
+void compileParam(void)
+{
+  // TODO: create and declare a parameter
+  Object *obj = NULL; // parameter object
+  switch (lookAhead->tokenType)
+  {
+  case TK_IDENT:
+    eat(TK_IDENT);
+    obj = createParameterObject(currentToken->string, PARAM_VALUE, symtab->currentScope->owner);
+    eat(SB_COLON);
+    obj->paramAttrs->type = compileBasicType();
+    declareObject(obj);
+    break;
+  case KW_VAR:
+    eat(KW_VAR);
+    eat(TK_IDENT);
+    obj = createParameterObject(currentToken->string, PARAM_REFERENCE, symtab->currentScope->owner);
+    eat(SB_COLON);
+
+    obj->paramAttrs->type = compileBasicType();
+    declareObject(obj);
+    break;
+  default:
+    error(ERR_INVALID_PARAMETER, lookAhead->lineNo, lookAhead->colNo);
+    break;
+  }
+}
+
+void comp
+[2025-01-03 16:44:50] [ERROR] Unknown message type from userid 1: ileStatements(void)
+{
+  compileStatement();
+  while (lookAhead->tokenType == SB_SEMICOLON)
+  {
+    eat(SB_SEMICOLON);
+    compileStatement();
+  }
+}
+
+void compileStatement(void)
+{
+  switch (lookAhead->tokenType)
+  {
+  case TK_IDENT:
+    compileAssignSt();
+    break;
+  case KW_CALL:
+    compileCallSt();
+    break;
+  case KW_BEGIN:
+    compileGroupSt();
+    break;
+  case KW_IF:
+    compileIfSt();
+    break;
+  case KW_WHILE:
+    compileWhileSt();
+    break;
+  case KW_FOR:
+    compileForSt();
+    break;
+    // EmptySt needs to check FOLLOW tokens
+  case SB_SEMICOLON:
+  case KW_END:
+  case KW_ELSE:
+    break;
+    // Error occurs
+  default:
+    error(ERR_INVALID_STATEMENT, lookAhead->lineNo, lookAhead->colNo);
+    break;
+  }
+}
+
+void compileLValue(void)
+{
+  eat(TK_IDENT);
+  compileIndexes();
+}
+
+void compileAssignSt(void)
+{
+  compileLValue();
+  eat(SB_ASSIGN);
+  compileExpression();
+}
+
+void compileCallSt(void)
+{
+  eat(KW_CALL);
+  eat(TK_IDENT);
+  compileArguments();
+}
+
+void compileGroupSt(void)
+{
+  eat(KW_BEGIN);
+  c
+[2025-01-03 16:44:50] [ERROR] Unknown message type from userid 1: ompileStatements();
+  eat(KW_END);
+}
+
+void compileIfSt(void)
+{
+  eat(KW_IF);
+  compileCondition();
+  eat(KW_THEN);
+  compileStatement();
+  if (lookAhead->tokenType == KW_ELSE)
+    compileElseSt();
+}
+
+void compileElseSt(void)
+{
+  eat(KW_ELSE);
+  compileStatement();
+}
+
+void compileWhileSt(void)
+{
+  eat(KW_WHILE);
+  compileCondition();
+  eat(KW_DO);
+  compileStatement();
+}
+
+void compileForSt(void)
+{
+  eat(KW_FOR);
+  eat(TK_IDENT);
+  eat(SB_ASSIGN);
+  compileExpression();
+  eat(KW_TO);
+  compileExpression();
+  eat(KW_DO);
+  compileStatement();
+}
+
+void compileArgument(void)
+{
+  compileExpression();
+}
+
+void compileArguments(void)
+{
+  switch (lookAhead->tokenType)
+  {
+  case SB_LPAR:
+    eat(SB_LPAR);
+    compileArgument();
+
+    while (lookAhead->tokenType == SB_COMMA)
+    {
+      eat(SB_COMMA);
+      compileArgument();
+    }
+
+    eat(SB_RPAR);
+    break;
+    // Check FOLLOW set
+  case SB_TIMES:
+  case SB_SLASH:
+  case SB_PLUS:
+  case SB_MINUS:
+  case KW_TO:
+  case KW_DO:
+  case SB_RPAR:
+  case SB_COMMA:
+  case SB_
+[2025-01-03 16:44:50] [ERROR] Unknown message type from userid 1: EQ:
+  case SB_NEQ:
+  case SB_LE:
+  case SB_LT:
+  case SB_GE:
+  case SB_GT:
+  case SB_RSEL:
+  case SB_SEMICOLON:
+  case KW_END:
+  case KW_ELSE:
+  case KW_THEN:
+    break;
+  default:
+    error(ERR_INVALID_ARGUMENTS, lookAhead->lineNo, lookAhead->colNo);
+  }
+}
+
+void compileCondition(void)
+{
+  compileExpression();
+  switch (lookAhead->tokenType)
+  {
+  case SB_EQ:
+    eat(SB_EQ);
+    break;
+  case SB_NEQ:
+    eat(SB_NEQ);
+    break;
+  case SB_LE:
+    eat(SB_LE);
+    break;
+  case SB_LT:
+    eat(SB_LT);
+    break;
+  case SB_GE:
+    eat(SB_GE);
+    break;
+  case SB_GT:
+    eat(SB_GT);
+    break;
+  default:
+    error(ERR_INVALID_COMPARATOR, lookAhead->lineNo, lookAhead->colNo);
+  }
+
+  compileExpression();
+}
+
+void compileExpression(void)
+{
+  switch (lookAhead->tokenType)
+  {
+  case SB_PLUS:
+    eat(SB_PLUS);
+    compileExpression2();
+    break;
+  case SB_MINUS:
+    eat(SB_MINUS);
+    compileExpression2();
+    break;
+  default:
+    compileExpression2();
+  }
+}
+
+void compileExpression2(void)
+{
+  compileTerm();
+  compile
+[2025-01-03 16:44:50] [ERROR] Unknown message type from userid 1: Expression3();
+}
+
+void compileExpression3(void)
+{
+  switch (lookAhead->tokenType)
+  {
+  case SB_PLUS:
+    eat(SB_PLUS);
+    compileTerm();
+    compileExpression3();
+    break;
+  case SB_MINUS:
+    eat(SB_MINUS);
+    compileTerm();
+    compileExpression3();
+    break;
+    // check the FOLLOW set
+  case KW_TO:
+  case KW_DO:
+  case SB_RPAR:
+  case SB_COMMA:
+  case SB_EQ:
+  case SB_NEQ:
+  case SB_LE:
+  case SB_LT:
+  case SB_GE:
+  case SB_GT:
+  case SB_RSEL:
+  case SB_SEMICOLON:
+  case KW_END:
+  case KW_ELSE:
+  case KW_THEN:
+    break;
+  default:
+    error(ERR_INVALID_EXPRESSION, lookAhead->lineNo, lookAhead->colNo);
+  }
+}
+
+void compileTerm(void)
+{
+  compileFactor();
+  compileTerm2();
+}
+
+void compileTerm2(void)
+{
+  switch (lookAhead->tokenType)
+  {
+  case SB_TIMES:
+    eat(SB_TIMES);
+    compileFactor();
+    compileTerm2();
+    break;
+  case SB_SLASH:
+    eat(SB_SLASH);
+    compileFactor();
+    compileTerm2();
+    break;
+    // check the FOLLOW set
+  case SB_PLUS:
+  case SB_MINUS:
+  case KW_TO:
+  case KW_DO:
+  ca
+[2025-01-03 16:44:50] [ERROR] Unknown message type from userid 1: se SB_RPAR:
+  case SB_COMMA:
+  case SB_EQ:
+  case SB_NEQ:
+  case SB_LE:
+  case SB_LT:
+  case SB_GE:
+  case SB_GT:
+  case SB_RSEL:
+  case SB_SEMICOLON:
+  case KW_END:
+  case KW_ELSE:
+  case KW_THEN:
+    break;
+  default:
+    error(ERR_INVALID_TERM, lookAhead->lineNo, lookAhead->colNo);
+  }
+}
+
+void compileFactor(void)
+{
+  switch (lookAhead->tokenType)
+  {
+  case TK_NUMBER:
+    eat(TK_NUMBER);
+    break;
+  case TK_CHAR:
+    eat(TK_CHAR);
+    break;
+  case TK_IDENT:
+    eat(TK_IDENT);
+    switch (lookAhead->tokenType)
+    {
+    case SB_LPAR:
+      compileArguments();
+      break;
+    case SB_LSEL:
+      compileIndexes();
+      break;
+    default:
+      break;
+    }
+    break;
+  default:
+    error(ERR_INVALID_FACTOR, lookAhead->lineNo, lookAhead->colNo);
+  }
+}
+
+void compileIndexes(void)
+{
+  while (lookAhead->tokenType == SB_LSEL)
+  {
+    eat(SB_LSEL);
+    compileExpression();
+    eat(SB_RSEL);
+  }
+}
+
+int compile(char *fileName)
+{
+  if (openInputStream(fileName) == IO_ERROR)
+    return IO_ERROR;
+
+  currentToken = 
+[2025-01-03 16:44:50] [ERROR] Unknown message type from userid 1: NULL;
+  lookAhead = getValidToken();
+
+  initSymTab();
+
+  compileProgram();
+
+  printObject(symtab->program, 0);
+
+  cleanSymTab();
+
+  free(currentToken);
+  free(lookAhead);
+  closeInputStream();
+  return IO_SUCCESS;
+}
+DATA GET_ATTACHMENTS 1
+[2025-01-03 16:45:06] [INFO] Sent comments for task_id 2 to client_fd 5
+[2025-01-03 16:45:06] [ERROR] Unknown message type: GET_ATTACHMENTS 2
+[2025-01-03 16:45:21] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 16:45:21] [INFO] Sent member list for project 14
+[2025-01-03 16:45:22] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 16:45:22] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 16:53:22] [INFO] Client disconnected: client_fd=5
+[2025-01-03 16:53:22] [INFO] Closed connection with client
+[2025-01-03 16:53:22] [INFO] Finished thread for client_fd=5
+[2025-01-03 16:53:26] [INFO] Server is listening on port 8080
+[2025-01-03 16:53:26] [INFO] Server is running on port 8080...
+[2025-01-03 16:53:29] [INFO] Client connected with IP: 127.0.0.1 and Port: 51878
+[2025-01-03 16:53:29] [INFO] Started thread for client_fd=5
+[2025-01-03 16:53:43] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 16:53:43] [INFO] Sent project list to user 1
+[2025-01-03 16:53:45] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 16:53:45] [INFO] Sent member list for project 14
+[2025-01-03 16:53:52] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 16:54:49] [INFO] Client disconnected: client_fd=5
+[2025-01-03 16:54:49] [INFO] Closed connection with client
+[2025-01-03 16:54:49] [INFO] Finished thread for client_fd=5
+[2025-01-03 16:54:50] [INFO] Client connected with IP: 127.0.0.1 and Port: 49328
+[2025-01-03 16:54:50] [INFO] Started thread for client_fd=6
+[2025-01-03 16:55:16] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 16:55:16] [INFO] Sent project list to user 1
+[2025-01-03 16:55:17] [INFO] Sent task list for project 14 to client_fd 6
+[2025-01-03 16:55:17] [INFO] Sent member list for project 14
+[2025-01-03 16:55:20] [INFO] Sent comments for task_id 1 to client_fd 6
+[2025-01-03 16:55:20] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 16:55:24] [ERROR] Invalid data format received.
+[2025-01-03 16:55:37] [INFO] Client disconnected: client_fd=6
+[2025-01-03 16:55:37] [INFO] Closed connection with client
+[2025-01-03 16:55:37] [INFO] Finished thread for client_fd=6
+[2025-01-03 16:55:39] [INFO] Client connected with IP: 127.0.0.1 and Port: 41528
+[2025-01-03 16:55:39] [INFO] Started thread for client_fd=5
+[2025-01-03 16:55:49] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 16:55:49] [INFO] Sent project list to user 1
+[2025-01-03 16:55:50] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 16:55:50] [INFO] Sent member list for project 14
+[2025-01-03 16:55:51] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 16:55:51] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 16:55:55] [ERROR] Invalid data format received.
+[2025-01-03 17:00:17] [ERROR] Error binding socket
+[2025-01-03 17:00:17] [ERROR] Failed to set up server socket
+[2025-01-03 17:00:30] [INFO] Server is listening on port 8081
+[2025-01-03 17:00:30] [INFO] Server is running on port 8081...
+[2025-01-03 17:00:32] [INFO] Client connected with IP: 127.0.0.1 and Port: 34590
+[2025-01-03 17:00:32] [INFO] Started thread for client_fd=5
+[2025-01-03 17:00:45] [ERROR] Login failed for user user1
+[2025-01-03 17:00:52] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:00:52] [INFO] Sent project list to user 1
+[2025-01-03 17:00:53] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:00:53] [INFO] Sent member list for project 14
+[2025-01-03 17:00:54] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:00:54] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:01:06] [ERROR] Failed to receive data from client.
+[2025-01-03 17:01:06] [INFO] Client disconnected: client_fd=5
+[2025-01-03 17:01:06] [INFO] Closed connection with client
+[2025-01-03 17:01:06] [INFO] Finished thread for client_fd=5
+[2025-01-03 17:01:10] [INFO] Server is listening on port 8081
+[2025-01-03 17:01:10] [INFO] Server is running on port 8081...
+[2025-01-03 17:01:12] [INFO] Client connected with IP: 127.0.0.1 and Port: 41048
+[2025-01-03 17:01:12] [INFO] Started thread for client_fd=5
+[2025-01-03 17:01:22] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:01:22] [INFO] Sent project list to user 1
+[2025-01-03 17:01:23] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:01:23] [INFO] Sent member list for project 14
+[2025-01-03 17:01:26] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:01:26] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:01:29] [ERROR] Failed to parse metadata.
+[2025-01-03 17:01:38] [INFO] Client disconnected: client_fd=5
+[2025-01-03 17:01:38] [INFO] Closed connection with client
+[2025-01-03 17:01:38] [INFO] Finished thread for client_fd=5
+[2025-01-03 17:01:40] [INFO] Client connected with IP: 127.0.0.1 and Port: 36672
+[2025-01-03 17:01:40] [INFO] Started thread for client_fd=6
+[2025-01-03 17:01:53] [ERROR] Login failed for user user1
+[2025-01-03 17:02:00] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:02:00] [INFO] Sent project list to user 1
+[2025-01-03 17:02:01] [INFO] Sent task list for project 14 to client_fd 6
+[2025-01-03 17:02:01] [INFO] Sent member list for project 14
+[2025-01-03 17:02:04] [INFO] Sent comments for task_id 1 to client_fd 6
+[2025-01-03 17:02:04] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:02:08] [ERROR] Failed to parse metadata.
+[2025-01-03 17:03:09] [ERROR] Failed to receive data from client.
+[2025-01-03 17:03:09] [INFO] Client disconnected: client_fd=6
+[2025-01-03 17:03:09] [INFO] Closed connection with client
+[2025-01-03 17:03:09] [INFO] Finished thread for client_fd=6
+[2025-01-03 17:09:46] [INFO] Server is listening on port 8081
+[2025-01-03 17:09:46] [INFO] Server is running on port 8081...
+[2025-01-03 17:09:47] [INFO] Client connected with IP: 127.0.0.1 and Port: 39012
+[2025-01-03 17:09:47] [INFO] Started thread for client_fd=5
+[2025-01-03 17:09:55] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:09:55] [INFO] Sent project list to user 1
+[2025-01-03 17:09:56] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:09:56] [INFO] Sent member list for project 14
+[2025-01-03 17:09:58] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:09:58] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:10:07] [ERROR] Failed to parse metadata.
+[2025-01-03 17:11:06] [ERROR] Error binding socket
+[2025-01-03 17:11:06] [ERROR] Failed to set up server socket
+[2025-01-03 17:11:09] [INFO] Server is listening on port 8080
+[2025-01-03 17:11:09] [INFO] Server is running on port 8080...
+[2025-01-03 17:11:12] [INFO] Client connected with IP: 127.0.0.1 and Port: 53954
+[2025-01-03 17:11:12] [INFO] Started thread for client_fd=5
+[2025-01-03 17:11:20] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:11:20] [INFO] Sent project list to user 1
+[2025-01-03 17:11:21] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:11:21] [INFO] Sent member list for project 14
+[2025-01-03 17:11:21] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:11:21] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:11:28] [ERROR] Failed to parse metadata.
+[2025-01-03 17:12:01] [ERROR] Failed to receive data from client.
+[2025-01-03 17:12:01] [INFO] Client disconnected: client_fd=5
+[2025-01-03 17:12:01] [INFO] Closed connection with client
+[2025-01-03 17:12:01] [INFO] Finished thread for client_fd=5
+[2025-01-03 17:15:23] [INFO] Server is listening on port 8080
+[2025-01-03 17:15:23] [INFO] Server is running on port 8080...
+[2025-01-03 17:15:25] [INFO] Client connected with IP: 127.0.0.1 and Port: 57352
+[2025-01-03 17:15:25] [INFO] Started thread for client_fd=5
+[2025-01-03 17:15:36] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:15:36] [INFO] Sent project list to user 1
+[2025-01-03 17:15:37] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:15:37] [INFO] Sent member list for project 14
+[2025-01-03 17:15:38] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:15:38] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:15:43] [INFO] File transfer completed.
+[2025-01-03 17:15:43] [INFO] File À~¼¨ÿÿ attached to task 65535 successfully.
+[2025-01-03 17:15:43] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:21:06] [ERROR] Error receiving data from client
+[2025-01-03 17:21:06] [ERROR] Error receiving data from client_fd=5
+[2025-01-03 17:21:06] [INFO] Closed connection with client
+[2025-01-03 17:21:06] [INFO] Finished thread for client_fd=5
+[2025-01-03 17:22:45] [INFO] Server is listening on port 8080
+[2025-01-03 17:22:45] [INFO] Server is running on port 8080...
+[2025-01-03 17:22:47] [INFO] Client connected with IP: 127.0.0.1 and Port: 51870
+[2025-01-03 17:22:47] [INFO] Started thread for client_fd=5
+[2025-01-03 17:22:57] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:22:57] [INFO] Sent project list to user 1
+[2025-01-03 17:22:58] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:22:58] [INFO] Sent member list for project 14
+[2025-01-03 17:23:00] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:23:00] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:23:06] [ERROR] Invalid FILE_ATTACHMENT format: ADD_ATTACHMENT 1 reader.h
+[2025-01-03 17:23:07] [ERROR] Invalid FILE_ATTACHMENT format: ADD_ATTACHMENT /* 
+ * @copyright (c) 2008, Hedspi, Hanoi University of Technology
+ * @author Huu-Duc Nguyen
+ * @version 1.0
+ */
+
+#ifndef __READER_H__
+#define __READER_H__
+
+#define IO_ERROR 0
+#define IO_SUCCESS 1
+
+int readChar(void);
+int openInputStream(char *fileName);
+void closeInputStream(void);
+
+#endif
+
+[2025-01-03 17:23:07] [ERROR] Invalid FILE_ATTACHMENT format: ADD_ATTACHMENT END
+[2025-01-03 17:23:07] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:24:05] [ERROR] Error receiving data from client
+[2025-01-03 17:24:05] [ERROR] Error receiving data from client_fd=5
+[2025-01-03 17:24:05] [INFO] Closed connection with client
+[2025-01-03 17:24:05] [INFO] Finished thread for client_fd=5
+[2025-01-03 17:24:09] [INFO] Server is listening on port 8080
+[2025-01-03 17:24:09] [INFO] Server is running on port 8080...
+[2025-01-03 17:24:12] [INFO] Client connected with IP: 127.0.0.1 and Port: 45872
+[2025-01-03 17:24:12] [INFO] Started thread for client_fd=5
+[2025-01-03 17:24:19] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:24:19] [INFO] Sent project list to user 1
+[2025-01-03 17:24:20] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:24:20] [INFO] Sent member list for project 14
+[2025-01-03 17:24:22] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:24:22] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:24:26] [ERROR] Invalid FILE_ATTACHMENT format: ADD_ATTACHMENT 1 charcode.h
+[2025-01-03 17:24:27] [ERROR] Invalid FILE_ATTACHMENT format: ADD_ATTACHMENT /* 
+ * @copyright (c) 2008, Hedspi, Hanoi University of Technology
+ * @author Huu-Duc Nguyen
+ * @version 1.0
+ */
+
+#ifndef __CHARCODE_H__
+#define __CHARCODE_H__
+
+typedef enum {
+  CHAR_SPACE,
+  CHAR_LETTER,
+  CHAR_DIGIT,
+  CHAR_PLUS,
+  CHAR_MINUS,
+  CHAR_TIMES,
+  CHAR_SLASH,
+  CHAR_LT,
+  CHAR_GT,
+  CHAR_EXCLAMATION,
+  CHAR_EQ,
+  CHAR_COMMA,
+  CHAR_PERIOD,
+  CHAR_COLON,
+  CHAR_SEMICOLON,
+  CHAR_SINGLEQUOTE,
+  CHAR_LPAR,
+  CHAR_RPAR,
+  CHAR_UNKNOWN
+} CharCode;
+
+#endif
+íúöÿÿ
+[2025-01-03 17:24:27] [ERROR] Invalid FILE_ATTACHMENT format: ADD_ATTACHMENT END
+[2025-01-03 17:24:27] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:27:47] [INFO] Server is listening on port 8080
+[2025-01-03 17:27:47] [INFO] Server is running on port 8080...
+[2025-01-03 17:27:48] [INFO] Client connected with IP: 127.0.0.1 and Port: 38060
+[2025-01-03 17:27:48] [INFO] Started thread for client_fd=5
+[2025-01-03 17:28:02] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:28:02] [INFO] Sent project list to user 1
+[2025-01-03 17:28:03] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:28:03] [INFO] Sent member list for project 14
+[2025-01-03 17:28:04] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:28:04] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:28:09] [ERROR] Invalid FILE_ATTACHMENT format: ADD_ATTACHMENT 1 debug.h
+[2025-01-03 17:28:10] [ERROR] Invalid FILE_ATTACHMENT format: ADD_ATTACHMENT /* 
+ * @copyright (c) 2008, Hedspi, Hanoi University of Technology
+ * @author Huu-Duc Nguyen
+ * @version 1.0
+ */
+
+#ifndef __DEBUG_H__
+#define __DEBUG_H_
+
+#include "symtab.h"
+
+void printType(Type* type);
+void printConstantValue(ConstantValue* value);
+void printObject(Object* obj, int indent);
+void printObjectList(ObjectNode* objList, int indent);
+void printScope(Scope* scope, int indent);
+
+#endif
+èÿÿ
+[2025-01-03 17:28:10] [ERROR] Invalid FILE_ATTACHMENT format: ADD_ATTACHMENT END
+[2025-01-03 17:28:10] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:29:33] [ERROR] Error binding socket
+[2025-01-03 17:29:33] [ERROR] Failed to set up server socket
+[2025-01-03 17:29:54] [ERROR] Error binding socket
+[2025-01-03 17:29:54] [ERROR] Failed to set up server socket
+[2025-01-03 17:30:03] [INFO] Server is listening on port 8081
+[2025-01-03 17:30:03] [INFO] Server is running on port 8081...
+[2025-01-03 17:30:05] [INFO] Client connected with IP: 127.0.0.1 and Port: 36078
+[2025-01-03 17:30:05] [INFO] Started thread for client_fd=5
+[2025-01-03 17:30:12] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:30:12] [INFO] Sent project list to user 1
+[2025-01-03 17:30:13] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:30:13] [INFO] Sent member list for project 14
+[2025-01-03 17:30:15] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:30:15] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:30:20] [INFO] Receiving file: /home/parallels/Desktop/Work-managment/Work_management/src/server/database/uploads/error.h
+[2025-01-03 17:30:20] [INFO] File transfer completed.
+[2025-01-03 17:30:20] [INFO] File error.h attached to task 65535 successfully.
+[2025-01-03 17:30:20] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:32:41] [ERROR] Error binding socket
+[2025-01-03 17:32:41] [ERROR] Failed to set up server socket
+[2025-01-03 17:32:43] [INFO] Server is listening on port 8080
+[2025-01-03 17:32:43] [INFO] Server is running on port 8080...
+[2025-01-03 17:32:46] [INFO] Client connected with IP: 127.0.0.1 and Port: 43278
+[2025-01-03 17:32:46] [INFO] Started thread for client_fd=5
+[2025-01-03 17:32:53] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:32:53] [INFO] Sent project list to user 1
+[2025-01-03 17:32:55] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:32:55] [INFO] Sent member list for project 14
+[2025-01-03 17:32:55] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:32:55] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:33:02] [INFO] File transfer completed.
+[2025-01-03 17:33:02] [INFO] File example.kpl attached to task 0 successfully.
+[2025-01-03 17:33:02] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:34:25] [ERROR] Error binding socket
+[2025-01-03 17:34:25] [ERROR] Failed to set up server socket
+[2025-01-03 17:34:27] [INFO] Server is listening on port 8081
+[2025-01-03 17:34:27] [INFO] Server is running on port 8081...
+[2025-01-03 17:34:30] [INFO] Client connected with IP: 127.0.0.1 and Port: 60156
+[2025-01-03 17:34:30] [INFO] Started thread for client_fd=5
+[2025-01-03 17:34:38] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:34:38] [INFO] Sent project list to user 1
+[2025-01-03 17:34:39] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:34:39] [INFO] Sent member list for project 14
+[2025-01-03 17:34:42] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:34:42] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:34:48] [INFO] Receiving file: /home/parallels/Desktop/Work-managment/Work_management/src/server/database/uploads/parser.h
+[2025-01-03 17:34:48] [INFO] File transfer completed.
+[2025-01-03 17:34:48] [INFO] File parser.h attached to task 0 successfully.
+[2025-01-03 17:34:48] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:35:49] [ERROR] Error binding socket
+[2025-01-03 17:35:49] [ERROR] Failed to set up server socket
+[2025-01-03 17:35:51] [INFO] Server is listening on port 8080
+[2025-01-03 17:35:51] [INFO] Server is running on port 8080...
+[2025-01-03 17:35:57] [INFO] Client connected with IP: 127.0.0.1 and Port: 53350
+[2025-01-03 17:35:57] [INFO] Started thread for client_fd=5
+[2025-01-03 17:36:07] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:36:07] [INFO] Sent project list to user 1
+[2025-01-03 17:36:08] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:36:08] [INFO] Sent member list for project 14
+[2025-01-03 17:36:10] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:36:10] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:36:15] [INFO] Receiving file: /home/parallels/Desktop/Work-managment/Work_management/src/server/database/uploads/reader.c
+[2025-01-03 17:36:15] [INFO] File transfer completed.
+[2025-01-03 17:36:15] [INFO] File reader.c attached to task 0 successfully.
+[2025-01-03 17:36:15] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:37:35] [INFO] Server is listening on port 8080
+[2025-01-03 17:37:35] [INFO] Server is running on port 8080...
+[2025-01-03 17:37:40] [INFO] Server is listening on port 8080
+[2025-01-03 17:37:40] [INFO] Server is running on port 8080...
+[2025-01-03 17:37:42] [INFO] Client connected with IP: 127.0.0.1 and Port: 52878
+[2025-01-03 17:37:42] [INFO] Started thread for client_fd=5
+[2025-01-03 17:37:51] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:37:51] [INFO] Sent project list to user 1
+[2025-01-03 17:37:52] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:37:52] [INFO] Sent member list for project 14
+[2025-01-03 17:37:53] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:37:53] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:37:58] [INFO] Receiving file: /home/parallels/Desktop/Work-managment/Work_management/src/server/database/uploads/parser.c
+[2025-01-03 17:37:58] [INFO] File transfer completed.
+[2025-01-03 17:37:59] [INFO] File parser.c attached to task 0 successfully.
+[2025-01-03 17:38:46] [ERROR] Error binding socket
+[2025-01-03 17:38:46] [ERROR] Failed to set up server socket
+[2025-01-03 17:38:49] [ERROR] Error binding socket
+[2025-01-03 17:38:49] [ERROR] Failed to set up server socket
+[2025-01-03 17:38:52] [INFO] Server is listening on port 8081
+[2025-01-03 17:38:52] [INFO] Server is running on port 8081...
+[2025-01-03 17:38:55] [INFO] Client connected with IP: 127.0.0.1 and Port: 59752
+[2025-01-03 17:38:55] [INFO] Started thread for client_fd=5
+[2025-01-03 17:39:03] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:39:03] [INFO] Sent project list to user 1
+[2025-01-03 17:39:04] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:39:04] [INFO] Sent member list for project 14
+[2025-01-03 17:39:06] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:39:06] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:39:13] [INFO] Receiving file: /home/parallels/Desktop/Work-managment/Work_management/src/server/database/uploads/index.html
+[2025-01-03 17:39:13] [INFO] File transfer completed.
+[2025-01-03 17:39:13] [INFO] File index.html attached to task 1 successfully.
+[2025-01-03 17:39:13] [ERROR] Unknown message type: GET_ATTACHMENTS 1
+[2025-01-03 17:45:05] [INFO] Server is listening on port 8081
+[2025-01-03 17:45:05] [INFO] Server is running on port 8081...
+[2025-01-03 17:45:07] [INFO] Client connected with IP: 127.0.0.1 and Port: 43646
+[2025-01-03 17:45:07] [INFO] Started thread for client_fd=5
+[2025-01-03 17:45:18] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:45:18] [INFO] Sent project list to user 1
+[2025-01-03 17:45:20] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:45:20] [INFO] Sent member list for project 14
+[2025-01-03 17:45:21] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:45:21] [INFO] Sent attachments for task_id 1 to client_fd 5
+[2025-01-03 17:49:50] [INFO] Client disconnected: client_fd=5
+[2025-01-03 17:49:50] [INFO] Closed connection with client
+[2025-01-03 17:49:50] [INFO] Finished thread for client_fd=5
+[2025-01-03 17:51:44] [INFO] Server is listening on port 8081
+[2025-01-03 17:51:44] [INFO] Server is running on port 8081...
+[2025-01-03 17:51:46] [INFO] Client connected with IP: 127.0.0.1 and Port: 60052
+[2025-01-03 17:51:46] [INFO] Started thread for client_fd=5
+[2025-01-03 17:52:03] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:52:03] [INFO] Sent project list to user 1
+[2025-01-03 17:52:04] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:52:04] [INFO] Sent member list for project 14
+[2025-01-03 17:52:06] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:52:06] [INFO] Sent attachments for task_id 1 to client_fd 5
+[2025-01-03 17:52:11] [INFO] Receiving file: /home/parallels/Desktop/Work-managment/Work_management/src/server/database/uploads/reader.c
+[2025-01-03 17:52:21] [ERROR] Failed to receive data from client.
+[2025-01-03 17:52:21] [INFO] Client disconnected: client_fd=5
+[2025-01-03 17:52:21] [INFO] Closed connection with client
+[2025-01-03 17:52:21] [INFO] Finished thread for client_fd=5
+[2025-01-03 17:52:25] [INFO] Client connected with IP: 127.0.0.1 and Port: 44204
+[2025-01-03 17:52:25] [INFO] Started thread for client_fd=6
+[2025-01-03 17:52:34] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:52:34] [INFO] Sent project list to user 1
+[2025-01-03 17:52:35] [INFO] Sent task list for project 14 to client_fd 6
+[2025-01-03 17:52:35] [INFO] Sent member list for project 14
+[2025-01-03 17:52:36] [INFO] Sent comments for task_id 1 to client_fd 6
+[2025-01-03 17:52:36] [INFO] Sent attachments for task_id 1 to client_fd 6
+[2025-01-03 17:52:43] [INFO] Receiving file: /home/parallels/Desktop/Work-managment/Work_management/src/server/database/uploads/index.html
+[2025-01-03 17:52:43] [INFO] File transfer completed.
+[2025-01-03 17:52:43] [INFO] File index.html attached to task 1 successfully.
+[2025-01-03 17:52:43] [INFO] Sent attachments for task_id 1 to client_fd 6
+[2025-01-03 17:52:52] [INFO] Sent comments for task_id 2 to client_fd 6
+[2025-01-03 17:52:52] [INFO] Sent attachments for task_id 2 to client_fd 6
+[2025-01-03 17:52:55] [INFO] Sent task list for project 14 to client_fd 6
+[2025-01-03 17:52:55] [INFO] Sent member list for project 14
+[2025-01-03 17:52:59] [INFO] Sent task list for project 14 to client_fd 6
+[2025-01-03 17:52:59] [INFO] Sent member list for project 14
+[2025-01-03 17:53:01] [INFO] Project 15 has no tasks
+[2025-01-03 17:53:01] [INFO] Sent member list for project 15
+[2025-01-03 17:53:15] [INFO] Server is listening on port 8081
+[2025-01-03 17:53:15] [INFO] Server is running on port 8081...
+[2025-01-03 17:53:16] [INFO] Client connected with IP: 127.0.0.1 and Port: 55542
+[2025-01-03 17:53:16] [INFO] Started thread for client_fd=5
+[2025-01-03 17:53:24] [INFO] User user1 (ID: 1) logged in successfully
+[2025-01-03 17:53:24] [INFO] Sent project list to user 1
+[2025-01-03 17:53:25] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:53:25] [INFO] Sent member list for project 14
+[2025-01-03 17:53:26] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:53:26] [INFO] Sent attachments for task_id 1 to client_fd 5
+[2025-01-03 17:53:34] [INFO] File transfer completed.
+[2025-01-03 17:53:34] [INFO] File example.kpl attached to task 1 successfully.
+[2025-01-03 17:53:44] [INFO] Sent task list for project 14 to client_fd 5
+[2025-01-03 17:53:44] [INFO] Sent member list for project 14
+[2025-01-03 17:53:46] [INFO] Sent comments for task_id 1 to client_fd 5
+[2025-01-03 17:53:46] [INFO] Sent attachments for task_id 1 to client_fd 5

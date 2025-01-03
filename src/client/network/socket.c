@@ -57,7 +57,21 @@ void close_socket() {
         printf("Socket closed.\n");
     }
 }
+bool send_request_no_response(const char *request) {
+    if (sock_fd < 0) {
+        fprintf(stderr, "Error: Socket is not initialized.\n");
+        return false;
+    }
 
+    // Gửi yêu cầu qua socket
+    if (send(sock_fd, request, strlen(request), 0) < 0) {
+        perror("Send failed");
+        close_socket();
+        return false;
+    }
+
+    return true;
+}
 // Hàm gửi yêu cầu với phản hồi
 bool send_request(const char *request, char *response) {
     if (sock_fd < 0) {
@@ -141,17 +155,17 @@ void *start_receive_loop(void *callback) {
 }
 
 // Hàm gửi yêu cầu không cần phản hồi
-bool send_request_no_response(const char *request) {
-    if (sock_fd < 0) {
-        fprintf(stderr, "Socket is not initialized.\n");
-        return false;
-    }
+// bool send_request_no_response(const char *request) {
+//     if (sock_fd < 0) {
+//         fprintf(stderr, "Socket is not initialized.\n");
+//         return false;
+//     }
 
-    if (send(sock_fd, request, strlen(request), 0) < 0) {
-        perror("Send failed");
-        close_socket();
-        return false;
-    }
+//     if (send(sock_fd, request, strlen(request), 0) < 0) {
+//         perror("Send failed");
+//         close_socket();
+//         return false;
+//     }
 
-    return true;
-}
+//     return true;
+// }

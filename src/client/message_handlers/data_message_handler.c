@@ -61,16 +61,87 @@ bool send_get_attachments_request(int task_id, char *response, size_t response_s
     snprintf(request, sizeof(request), "DATA GET_ATTACHMENTS% d", task_id);
     return send_request(request, response) && strncmp(response, "ATTACHMENTS", 11) == 0;
 }
+#define BUFFER_SIZE 1024
 
+// bool send_add_attachment(int task_id, const char *file_name, const char *file_path) {
+//     // Mở file ở chế độ đọc nhị phân
+//     FILE *file = fopen(file_path, "rb");
+//     if (file == NULL) {
+//         log_error("Failed to open file: %s", file_path);
+//         return false;
+//     }
 
+//     // Gửi metadata
+//     char metadata[BUFFER_SIZE];
+//     snprintf(metadata, sizeof(metadata), "DATA ADD_ATTACHMENT %d %s", task_id, file_name);
+//     if (!send_request_no_response(metadata)) {
+//         log_error("Failed to send metadata: %s", metadata);
+//         fclose(file);
+//         return false;
+//     }
 
+//     // Gửi nội dung file
+//     char buffer[BUFFER_SIZE] = {0};
+//     while (!feof(file)) {
+//         size_t bytes_read = fread(buffer, 1, BUFFER_SIZE, file);
+//         if (bytes_read > 0) {
+//             if (!send_request_no_response(buffer)) {
+//                 log_error("Failed to send file content for: %s", file_name);
+//                 fclose(file);
+//                 return false;
+//             }
+//         }
+//         memset(buffer, 0, BUFFER_SIZE);
+//     }
+//     fclose(file);
 
-
+//     log_info("File sent successfully without waiting for response: %s", file_name);
+//     return true;
+// }
 bool send_add_attachment(int task_id, const char *file_name, const char *file_path) {
-    char request[1024];
-    snprintf(request, sizeof(request), "DATA ADD_ATTACHMENT|%d|%s|%s", task_id, file_name, file_path);
-    char response[256];
-    return send_request(request, response) && strncmp(response, "ATTACHMENT_ADDED", 16) == 0;
+    // Mở file ở chế độ đọc nhị phân
+    FILE *file = fopen(file_path, "rb");
+    if (file == NULL) {
+        log_error("Failed to open file: %s", file_path);
+        return false;
+    }
+
+    // Gửi metadata ban đầu
+    char metadata[BUFFER_SIZE];
+    snprintf(metadata, sizeof(metadata), "DATA ADD_ATTACHMENT %d %s", task_id, file_name);
+    printf("metadata: %s\n", metadata);
+    if (!send_request_no_response(metadata)) {
+        log_error("Failed to send metadata: %s", metadata);
+        fclose(file);
+        return false;
+    }
+    sleep(1);
+    // Gửi nội dung file theo từng gói
+    char buffer[BUFFER_SIZE];
+    while (!feof(file)) {
+        size_t bytes_read = fread(buffer, 1, BUFFER_SIZE - 20, file); // Dành chỗ cho chuỗi "DATA ADD_ATTACHMENT "
+        if (bytes_read > 0) {
+            char data_packet[BUFFER_SIZE];
+            snprintf(data_packet, sizeof(data_packet), "DATA ADD_ATTACHMENT ");
+            memcpy(data_packet + strlen(data_packet), buffer, bytes_read);
+
+            if (!send_request_no_response(data_packet)) {
+                log_error("Failed to send file content chunk for: %s", file_name);
+                fclose(file);
+                return false;
+            }
+        }
+    }
+    fclose(file);
+
+    // Gửi tín hiệu hoàn tất
+    if (!send_request_no_response("DATA ADD_ATTACHMENT END")) {
+        log_error("Failed to send completion signal for: %s", file_name);
+        return false;
+    }
+
+    log_info("File sent successfully in chunks: %s", file_name);
+    return true;
 }
 
 
